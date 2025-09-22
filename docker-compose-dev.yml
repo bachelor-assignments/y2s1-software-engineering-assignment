@@ -1,0 +1,62 @@
+services:
+  5005cmd-frontend:
+    image: 5005cmd-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    init: true
+    volumes:
+      - type: bind
+        source: ./frontend
+        target: /app
+      - type: volume
+        target: /app/node_modules
+    networks:
+      - frontend
+    ports:
+      - "${NEXTJS_FRONTEND_EXPOSE_PORT}:3000"
+
+  5005cmd-backend:
+    image: 5005cmd-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    env_file:
+      - .env
+    environment:
+      - DJANGO_DEBUG=1
+    volumes:
+      - type: bind
+        source: ./backend
+        target: /app
+    depends_on:
+      - 5005cmd-database
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "${DJANGO_BACKEND_EXPOSE_PORT_DEV}:8000"
+
+  5005cmd-database:
+    image: postgres:18rc1-alpine3.22
+    environment:
+     POSTGRES_DB: ${POSTGRES_DATABASE_NAME}
+     POSTGRES_USER: ${POSTGRES_DATABASE_USERNAME}
+     POSTGRES_PASSWORD: ${POSTGRES_DATABASE_PASSWORD}
+    ports:
+      - "${POSTGRES_DB_EXPOSE_PORT_DEV}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - frontend
+      - backend
+
+volumes:
+  postgres_data:
+networks:
+  frontend:
+  backend:
