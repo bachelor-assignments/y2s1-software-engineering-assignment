@@ -16,6 +16,25 @@ services:
       - frontend
     ports:
       - "8236:3000"
+
+  5005cmd-backend:
+    image: 5005cmd-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    env_file:
+      - .env
+    volumes:
+      - type: bind
+        source: ./backend
+        target: /app
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "8237:8000"
+
 networks:
   frontend:
   backend:
