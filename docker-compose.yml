@@ -1,0 +1,55 @@
+services:
+  5005cmd-frontend:
+    image: 5005cmd-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    init: true
+    volumes:
+      - type: volume
+        target: /app/node_modules
+    networks:
+      - frontend
+    ports:
+      - "3000"
+
+  5005cmd-backend:
+    image: 5005cmd-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    env_file:
+      - .env
+    environment:
+      - DJANGO_DEBUG=0
+    depends_on:
+      - 5005cmd-database
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "8000"
+
+  5005cmd-database:
+    image: postgres:18rc1-alpine3.22
+    environment:
+     POSTGRES_DB: ${POSTGRES_DATABASE_NAME}
+     POSTGRES_USER: ${POSTGRES_DATABASE_USERNAME}
+     POSTGRES_PASSWORD: ${POSTGRES_DATABASE_PASSWORD}
+    ports:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - frontend
+      - backend
+
+volumes:
+  postgres_data:
+networks:
+  frontend:
+  backend:
