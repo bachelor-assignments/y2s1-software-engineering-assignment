@@ -4,11 +4,12 @@ A Scalable Digital Asset Management (DAM) System for Visual AI Application.
 
 ### Tech stack used for this project:
 
-| Component | Technology         |
-|-----------|--------------------|
-| Frontend  | Next.js, Chakra UI |
-| Backend   | Django             |
-| Database  | PostgreSQL         |
+| Component       | Technology                 |
+|-----------------|----------------------------|
+| Frontend        | Next.js, Chakra UI         |
+| Backend         | Django                     |
+| Database        | PostgreSQL                 |
+| Object storage  | MinIO (AWS S3 compatible)  |
 
 ### The project deliverables should include:
 1. User authentication (login, role-based access: Admin, Editor, Viewer).
