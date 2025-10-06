@@ -1,5 +1,7 @@
 from django.db import models
 
+# Create your models here.
+
 class Asset(models.Model):
     asset_url = models.CharField(max_length=100, primary_key=True, null=False)
     title = models.CharField(max_length=100, unique=True, null=False)
