@@ -8,10 +8,10 @@ class Asset(APIView):
     def post(self, request: Request):
         return Response("todo", status=status.HTTP_200_OK)
 
-    def put(self, request: Request, user_id=None):
+    def put(self, request: Request, asset_id=None):
         return Response("todo", status=status.HTTP_200_OK)
 
-    def delete(self, request: Request, user_id=None):
+    def delete(self, request: Request, asset_id=None):
         return Response("todo", status=status.HTTP_200_OK)
 
 
@@ -21,5 +21,5 @@ class AssetList(APIView):
 
 
 class AssetVersion(APIView):
-    def get(self, request: Request):
+    def get(self, request: Request, asset_id=None):
         return Response("todo", status=status.HTTP_200_OK)
