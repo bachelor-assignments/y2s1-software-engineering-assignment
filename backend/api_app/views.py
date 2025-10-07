@@ -1,13 +1,16 @@
 from datetime import datetime
-from django.shortcuts import render
-from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework import status
 
 # Create your views here.
-
 # NOTE: General application views only!
 
-def ping(request):
-    return JsonResponse({
-        "data": "pong",
-        "response_at": f"{datetime.now().isoformat()}Z"
-    })
+
+class Ping(APIView):
+    def get(self, request: Request):
+        return Response(
+            {"data": "pong", "response_at": f"{datetime.now().isoformat()}Z"},
+            status=status.HTTP_200_OK,
+        )
