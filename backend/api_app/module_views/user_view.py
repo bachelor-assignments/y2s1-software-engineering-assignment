@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-from api_app.models import Role, User
-from ..serializers import RoleSerializer, UserSerializer
+from api_app.models import User
+from ..serializers import UserSerializer
 
 
 class UserView(APIView):
@@ -25,6 +25,5 @@ class UserListView(APIView):
 class UserRolesView(APIView):
     # TODO: auth permission required
     def get(self, request: Request):
-        role_list = Role.objects.all()
-        serializer = RoleSerializer(role_list, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        roles = [{"id": value, "name": label} for value, label in User.ROLE_CHOICES]
+        return Response(roles, status=status.HTTP_200_OK)
