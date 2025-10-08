@@ -1,6 +1,7 @@
 import os
 
 from django.apps import AppConfig
+from django.contrib.auth.hashers import make_password
 from django.db.models.signals import post_migrate
 
 
@@ -28,7 +29,7 @@ def initialize_default_postgres_records(sender, **kwargs):
         username=os.environ["APP_DEFAULT_ADMIN_USERNAME"],
         defaults={
             "username": os.environ["APP_DEFAULT_ADMIN_USERNAME"],
-            "password": os.environ["APP_DEFAULT_ADMIN_PASSWORD"],
+            "password": make_password(os.environ["APP_DEFAULT_ADMIN_PASSWORD"]),
             "role": Role.objects.get(name="admin"),
         },
     )
