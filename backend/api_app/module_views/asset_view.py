@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from rest_framework import status
 
 
-class Asset(APIView):
+class AssetView(APIView):
     def post(self, request: Request):
         return Response("todo", status=status.HTTP_200_OK)
 
@@ -15,11 +15,11 @@ class Asset(APIView):
         return Response("todo", status=status.HTTP_200_OK)
 
 
-class AssetList(APIView):
+class AssetListView(APIView):
     def get(self, request: Request):
         return Response("todo", status=status.HTTP_200_OK)
 
 
-class AssetVersion(APIView):
+class AssetVersionView(APIView):
     def get(self, request: Request, asset_id=None):
         return Response("todo", status=status.HTTP_200_OK)

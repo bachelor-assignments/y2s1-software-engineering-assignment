@@ -1,9 +1,11 @@
+import os
+
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 
 
 def initialize_default_postgres_records(sender, **kwargs):
-    from .models import Role
+    from .models import Role, User
 
     role_defaults = [
         {
@@ -21,6 +23,15 @@ def initialize_default_postgres_records(sender, **kwargs):
     ]
     for data in role_defaults:
         Role.objects.get_or_create(name=data["name"], defaults=data)
+
+    User.objects.get_or_create(
+        username=os.environ["APP_DEFAULT_ADMIN_USERNAME"],
+        defaults={
+            "username": os.environ["APP_DEFAULT_ADMIN_USERNAME"],
+            "password": os.environ["APP_DEFAULT_ADMIN_PASSWORD"],
+            "role": Role.objects.get(name="admin"),
+        },
+    )
 
 
 class ApiAppConfig(AppConfig):

@@ -1,17 +1,17 @@
 from django.urls import path
-from .module_views import asset, user
+from .module_views import asset_view, user_view
 from . import views
 
 urlpatterns = [
-    path("ping/", views.Ping.as_view()),
+    path("ping/", views.PingView.as_view()),
     ### User
-    path("user/", user.User.as_view()),
-    path("user/<int:user_id>/", user.User.as_view()),
-    path("user/list/", user.UserList.as_view()),
-    path("user/roles/", user.UserRoles.as_view()),
-    # ### Asset
-    path("asset/", asset.Asset.as_view()),
-    path("asset/<int:asset_id>/", asset.Asset.as_view()),
-    path("asset/list/", asset.AssetList.as_view()),
-    path("asset/<int:asset_id>/versions", asset.AssetVersion.as_view()),
+    path("user/", user_view.UserView.as_view()),
+    path("user/<int:user_id>/", user_view.UserView.as_view()),
+    path("user/list/", user_view.UserListView.as_view()),
+    path("user/roles/", user_view.UserRolesView.as_view()),
+    ### Asset
+    path("asset/", asset_view.AssetView.as_view()),
+    path("asset/<int:asset_id>/", asset_view.AssetView.as_view()),
+    path("asset/list/", asset_view.AssetListView.as_view()),
+    path("asset/<int:asset_id>/versions", asset_view.AssetVersionView.as_view()),
 ]

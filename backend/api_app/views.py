@@ -8,7 +8,7 @@ from rest_framework import status
 # NOTE: General application views only!
 
 
-class Ping(APIView):
+class PingView(APIView):
     def get(self, request: Request):
         return Response(
             {"data": "pong", "response_at": f"{datetime.now().isoformat()}Z"},

@@ -2,11 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-from api_app.models import Role
-from ..serializers import RoleSerializer
+from api_app.models import Role, User
+from ..serializers import RoleSerializer, UserSerializer
 
 
-class User(APIView):
+class UserView(APIView):
     def post(self, request: Request):
         return Response("todo", status=status.HTTP_200_OK)
 
@@ -17,12 +17,12 @@ class User(APIView):
         return Response("todo", status=status.HTTP_200_OK)
 
 
-class UserList(APIView):
+class UserListView(APIView):
     def get(self, request: Request):
         return Response("todo", status=status.HTTP_200_OK)
 
 
-class UserRoles(APIView):
+class UserRolesView(APIView):
     # TODO: auth permission required
     def get(self, request: Request):
         role_list = Role.objects.all()
