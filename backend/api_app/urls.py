@@ -1,11 +1,9 @@
 from django.urls import path
-from .module_views import auth, asset, user
+from .module_views import asset, user
 from . import views
 
 urlpatterns = [
     path("ping/", views.Ping.as_view()),
-    ### Auth
-    path("auth/login/", auth.Login.as_view()),
     ### User
     path("user/", user.User.as_view()),
     path("user/<int:user_id>/", user.User.as_view()),
