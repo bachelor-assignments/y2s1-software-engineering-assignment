@@ -5,13 +5,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from api_app.models import User
 from api_app.permissions import IsAdminPermission
+from api_app.serializers import UserSerializer
 
 
 class UserView(APIView):
     permission_classes = [IsAdminPermission]
-
+    """Uses UserSerializer to validate and save data(if wrong just delete)"""
     def post(self, request: Request):
-        return Response("todo", status=status.HTTP_200_OK)
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request: Request, user_id=None):
         return Response("todo", status=status.HTTP_200_OK)
