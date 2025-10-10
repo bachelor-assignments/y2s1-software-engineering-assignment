@@ -6,6 +6,13 @@ class FileSerializer(serializers.Serializer):
     file = serializers.FileField(required=True)
 
 
+class PaginationSerializer(serializers.Serializer):
+    page_size = serializers.IntegerField(
+        min_value=1, max_value=20, required=False, default=20
+    )
+    page_index = serializers.IntegerField(min_value=0, required=False, default=0)
+
+
 class AssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
@@ -16,10 +23,16 @@ class AssetSerializer(serializers.ModelSerializer):
         action = kwargs.pop("action", "default")
         super().__init__(*args, **kwargs)
 
-        if action == "post":
+        self.fields["updated_at"].read_only = True
+
+        if action == "get":
+            self.fields["asset_url"].required = False
+            self.fields["title"].required = False
+            self.fields["metadata"].required = False
+            self.fields["owner"].required = False
+        elif action == "post":
             self.fields["asset_url"].read_only = True
             self.fields["metadata"].required = False
-            self.fields["created_at"].read_only = True
             self.fields["owner"].read_only = True
         elif action == "put":
             self.fields["asset_url"].read_only = True
