@@ -1,5 +1,28 @@
 from rest_framework import serializers
-from .models import User
+from .models import Asset, User
+
+
+class FileSerializer(serializers.Serializer):
+    file = serializers.FileField(required=True)
+
+
+class AssetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Asset
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        # `action` passed from view
+        action = kwargs.pop("action", "default")
+        super().__init__(*args, **kwargs)
+
+        if action == "post":
+            self.fields["asset_url"].read_only = True
+            self.fields["metadata"].required = False
+            self.fields["created_at"].read_only = True
+            self.fields["owner"].read_only = True
+        elif action == "put":
+            self.fields["asset_url"].read_only = True
 
 
 class UserSerializer(serializers.ModelSerializer):

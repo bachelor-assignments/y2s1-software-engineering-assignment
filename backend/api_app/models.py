@@ -20,7 +20,7 @@ class User(AbstractUser):
 class Asset(models.Model):
     asset_url = models.CharField(max_length=100, primary_key=True)
     title = models.CharField(max_length=100, unique=True)
-    metadata = models.JSONField()
+    metadata = models.JSONField(default={})
     created_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
