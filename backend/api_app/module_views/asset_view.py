@@ -78,10 +78,17 @@ class AssetListView(APIView):
     def get(self, request: Request):
         pagination_serializer = PaginationSerializer(data=request.query_params)
         pagination_serializer.is_valid(raise_exception=True)
-        asset_serializer = AssetSerializer(data=request.query_params, action="get")
-        asset_serializer.is_valid(raise_exception=True)
 
-        return Response("todo", status=status.HTTP_200_OK)
+        page_index = pagination_serializer.validated_data['page_index']
+        page_size = pagination_serializer.validated_data['page_size']
+        offset = (page_index - 1) * page_size
+        limit = page_size
+
+        # TODO: add filtering
+        assets = Asset.objects.all()[offset:offset + limit]
+        serializer = AssetSerializer(assets, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 class AssetVersionView(APIView):
