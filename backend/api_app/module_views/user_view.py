@@ -19,7 +19,18 @@ class UserView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request: Request, user_id=None):
-        return Response("todo", status=status.HTTP_200_OK)
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response("User does not exist.", status=status.HTTP_404_NOT_FOUND)
+
+        user_serializer = UserSerializer(
+            instance=user, data=request.data, action="put"
+        )
+        user_serializer.is_valid(raise_exception=True)
+
+        user_serializer.save()
+        return Response(user_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request: Request, user_id=None):
         return Response("todo", status=status.HTTP_200_OK)
