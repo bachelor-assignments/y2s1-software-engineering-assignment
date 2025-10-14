@@ -40,5 +40,13 @@ class AssetSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = Asset
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        # `action` passed from view
+        action = kwargs.pop("action", "default")
+        super().__init__(*args, **kwargs)
+
+        self.fields["created_at"].read_only = True
+        self.fields["id"].read_only = True
