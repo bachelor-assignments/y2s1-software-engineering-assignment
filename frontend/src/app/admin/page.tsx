@@ -1,30 +1,13 @@
-"use client";
-import { useEffect, useState } from "react";
+import Link from "next/link";
 
-export default function AdminPage() {
-  const [users, setUsers] = useState<any[]>([]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    fetch("http://localhost:8000/api/users/", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(setUsers);
-  }, []);
-
+export default function AdminDashboard() {
   return (
-    <main>
-      <h1>Admin - User List</h1>
-      <a href="/admin/create-user">Create New User</a>
+    <div style={{ padding: "20px" }}>
+      <h1>Admin Dashboard</h1>
       <ul>
-        {users.map(u => (
-          <li key={u.id}>
-            {u.username} ({u.role})
-            <a href={`/admin/edit-user/${u.id}`}>Edit</a>
-          </li>
-        ))}
+        <li><Link href="/admin/users">👥 View All Users</Link></li>
+        <li><Link href="/admin/create-user">➕ Create New User</Link></li>
       </ul>
-    </main>
+    </div>
   );
 }
