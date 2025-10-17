@@ -20,8 +20,8 @@ class User(AbstractUser):
 class Asset(models.Model):
     asset_url = models.CharField(max_length=100, primary_key=True)
     title = models.CharField(max_length=100, unique=True)
-    metadata = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict)
+    updated_at = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -30,11 +30,16 @@ class Asset(models.Model):
 
 class AssetLog(models.Model):
     id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=100, unique=True)
+    title = models.CharField(max_length=100)
     metadata = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True)
-    asset_url = models.ForeignKey(Asset, on_delete=models.CASCADE)
-    updated_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    updated_at = models.DateTimeField(auto_now_add=True)
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="owned_asset_logs"
+    )
+    updated_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="updated_asset_logs"
+    )
 
     def __str__(self):
         return self.title
