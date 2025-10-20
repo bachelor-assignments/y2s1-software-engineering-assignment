@@ -6,7 +6,7 @@ export default function AdminDashboard() {
       <h1>Admin Dashboard</h1>
       <ul>
         <li><Link href="/admin/users">👥 View All Users</Link></li>
-        <li><Link href="/admin/create-user">➕ Create New User</Link></li>
+        <li><Link href="/admin/create_user">➕ Create New User</Link></li>
       </ul>
     </div>
   );

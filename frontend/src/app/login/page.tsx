@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginUser } from "@utils/loginAPI"; 
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -13,28 +14,24 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8237/api/token/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+      const data = await loginUser(username, password);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.detail || "Invalid username or password");
+      if (!data?.access) {
+        setError("Invalid username or password");
         return;
       }
 
       localStorage.setItem("token", data.access);
-      router.push("/asset"); 
-    } catch {
+
+      router.push("/asset");
+    } catch (err) {
+      console.error("Login error:", err);
       setError("Server error. Please try again later.");
     }
   };
 
   return (
-    <main>
+    <main style={{ textAlign: "center", marginTop: "50px" }}>
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <input
@@ -51,6 +48,7 @@ export default function LoginPage() {
         /><br />
         <button type="submit">Login</button>
       </form>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
     </main>
   );

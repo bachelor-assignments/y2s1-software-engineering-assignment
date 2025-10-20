@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getAllAssets } from "@utils/assetAPI"; 
 
 export default function AssetListPage() {
   const [assets, setAssets] = useState<any[]>([]);
@@ -15,19 +16,11 @@ export default function AssetListPage() {
         setLoading(true);
         setError(null);
 
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:8000/api/assets/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch assets: ${res.status}`);
-        }
-
-        const data = await res.json();
+        const data = await getAllAssets();
         setAssets(data);
       } catch (err: any) {
-        setError(err.message || "Something went wrong while fetching assets.");
+        console.error("Error fetching assets:", err);
+        setError("Failed to fetch assets.");
       } finally {
         setLoading(false);
       }
@@ -40,21 +33,8 @@ export default function AssetListPage() {
     a.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <main>
-        <p>Loading assets...</p>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main>
-        <p style={{ color: "red" }}>Error: {error}</p>
-      </main>
-    );
-  }
+  if (loading) return <main><p>Loading assets...</p></main>;
+  if (error) return <main><p style={{ color: "red" }}>{error}</p></main>;
 
   return (
     <main>

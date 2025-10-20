@@ -1,27 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getAssetById } from "@utils/assetAPI";
 
 export default function AssetDetail({ params }: { params: { id: string } }) {
   const [asset, setAsset] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null); // for error message
-  const [loading, setLoading] = useState(true); // for loading state
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAsset = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:8000/api/assets/${params.id}/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await getAssetById(params.id);
         setAsset(data);
-      } catch (err: any) {
+      } catch (err) {
         console.error("Error fetching asset:", err);
         setError("Failed to load asset. Please try again later.");
       } finally {
@@ -32,13 +24,8 @@ export default function AssetDetail({ params }: { params: { id: string } }) {
     fetchAsset();
   }, [params.id]);
 
-  // 1️⃣ Loading state
   if (loading) return <p>Loading...</p>;
-
-  // 2️⃣ Error state
   if (error) return <p style={{ color: "red" }}>{error}</p>;
-
-  // 3️⃣ Success state
   if (!asset) return <p>No asset found.</p>;
 
   return (
@@ -46,9 +33,7 @@ export default function AssetDetail({ params }: { params: { id: string } }) {
       <h1>{asset.name}</h1>
       <p>{asset.description}</p>
       {asset.is_owner && (
-        <Link href={`/upload?id=${asset.id}`}>
-          Edit
-        </Link>
+        <Link href={`/upload?id=${asset.id}`}>Edit</Link>
       )}
     </main>
   );
