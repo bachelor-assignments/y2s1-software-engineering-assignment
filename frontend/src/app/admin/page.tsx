@@ -1,4 +1,6 @@
 import Link from "next/link";
+import "@styles/admin.css";
+import "@styles/form.css";
 
 export default function AdminDashboard() {
   return (

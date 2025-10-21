@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { uploadFile } from "@utils/uploadAPI"; // ✅ use your interceptor
+import { uploadFile } from "@utils/uploadAPI"; 
 import { useRouter } from "next/navigation";
+import "@styles/upload.css";
+import "@styles/form.css";
 
 export default function UploadAsset() {
   const [files, setFiles] = useState<File[]>([]);
@@ -10,13 +12,11 @@ export default function UploadAsset() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // 🧩 Handle file drop
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setFiles(Array.from(e.dataTransfer.files));
   };
 
-  // 🧩 Handle upload button click
   const handleUpload = async () => {
     if (files.length === 0) {
       setError("Please select at least one file to upload.");
@@ -30,13 +30,11 @@ export default function UploadAsset() {
       const formData = new FormData();
       files.forEach((file) => formData.append("file", file));
 
-      // ✅ use upload interceptor instead of direct fetch
       const response = await uploadFile(formData);
 
       alert("✅ Upload complete!");
       console.log("Server response:", response);
 
-      // Optional: navigate to asset list
       router.push("/assets");
     } catch (err: any) {
       console.error("Upload failed:", err);

@@ -1,4 +1,3 @@
-// src/interceptors/authInterceptor.ts
 import { apiFetch } from "@utils/fetchInterceptor";
 
 export async function loginUser(username: string, password: string) {

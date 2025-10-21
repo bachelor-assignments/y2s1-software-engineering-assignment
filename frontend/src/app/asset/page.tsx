@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAllAssets } from "@utils/assetAPI"; 
+import "@styles/asset.css";
 
 export default function AssetListPage() {
   const [assets, setAssets] = useState<any[]>([]);

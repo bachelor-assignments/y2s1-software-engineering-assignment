@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { adminAPI } from "@/utils/adminAPI";
-import UserList from "@/components/UserList";
+import { adminAPI } from "@utils/adminAPI";
 
 export default function UserListPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -12,7 +11,7 @@ export default function UserListPage() {
     try {
       const data = await adminAPI.getUsers();
       setUsers(data);
-    } catch (err: any) {
+    } catch {
       setError("Failed to load users.");
     }
   };
@@ -34,7 +33,6 @@ export default function UserListPage() {
     <main>
       <h2>User Management</h2>
       <Link href="/admin/create_user">➕ Create New User</Link>
-      <UserList users={users} />
       <ul>
         {users.map((u) => (
           <li key={u.id}>

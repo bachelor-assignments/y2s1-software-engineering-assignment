@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import "@styles/form.css";
 
 export default function AssetForm({ onSubmit }: { onSubmit: (data: any) => void }) {
   const [form, setForm] = useState({ name: "", description: "", file: null });

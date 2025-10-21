@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import "@styles/form.css";
 
 export default function UserForm({ onSubmit, user }: { onSubmit: (data: any) => void; user?: any }) {
   const [form, setForm] = useState({

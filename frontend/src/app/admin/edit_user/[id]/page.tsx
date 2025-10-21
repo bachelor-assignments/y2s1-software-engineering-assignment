@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import UserForm from "@/components/UserForm";
-import { adminAPI } from "@/utils/adminAPI";
+import UserForm from "@components/UserForm";
+import { adminAPI } from "@utils/adminAPI";
 
 export default function EditUserPage({ params }: { params: { id: string } }) {
   const [user, setUser] = useState<any>(null);
@@ -10,8 +10,12 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const data = await adminAPI.getUser(params.id);
-      setUser(data);
+      try {
+        const data = await adminAPI.getUser(params.id);
+        setUser(data);
+      } catch {
+        alert("Failed to fetch user data.");
+      }
     };
     fetchUser();
   }, [params.id]);

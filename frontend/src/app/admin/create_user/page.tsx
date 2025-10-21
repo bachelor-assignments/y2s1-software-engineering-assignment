@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import UserForm from "@/components/UserForm";
-import { adminAPI } from "@/utils/adminAPI";
+import UserForm from "@components/UserForm";
+import { adminAPI } from "@utils/adminAPI";
 
 export default function CreateUserPage() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function CreateUserPage() {
       await adminAPI.createUser(data);
       alert("User created successfully!");
       router.push("/admin/users");
-    } catch (err) {
+    } catch {
       alert("Failed to create user.");
     }
   };

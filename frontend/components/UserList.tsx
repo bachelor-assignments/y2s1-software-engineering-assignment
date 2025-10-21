@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import "@styles/global.css";
+import "@styles/navbar.css";
 
 export default function UserList({ users }: { users: any[] }) {
   return (

@@ -1,5 +1,5 @@
-import "../../components/Navbar.css";
-import Navbar from "../../components/Navbar";
+import "@styles/navbar.css"; 
+import Navbar from "@components/Navbar";
 import type { ReactNode } from "react";
 
 export default function RootLayout({ children }: { children: ReactNode }) {

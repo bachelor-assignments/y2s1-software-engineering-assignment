@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import "@styles/asset.css";
 
 export default function SearchBar({ onSearch }: { onSearch: (query: string) => void }) {
   const [query, setQuery] = useState("");

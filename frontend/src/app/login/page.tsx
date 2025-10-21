@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@utils/loginAPI"; 
+import "@styles/login.css";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");

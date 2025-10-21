@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import "@styles/asset.css";
 
 export default function AssetCard({ asset }: { asset: any }) {
   return (

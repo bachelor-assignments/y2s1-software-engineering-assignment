@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAssetById } from "@utils/assetAPI";
+import "@styles/asset.css";
 
 export default function AssetDetail({ params }: { params: { id: string } }) {
   const [asset, setAsset] = useState<any>(null);

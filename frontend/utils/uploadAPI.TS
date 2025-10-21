@@ -4,7 +4,7 @@ export async function uploadFile(formData: FormData) {
   const token = localStorage.getItem("token");
 
   try {
-    const response = await fetch("/api/upload", {
+    const response = await fetch("/api/asset/list", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
