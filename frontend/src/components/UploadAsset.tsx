@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { uploadAsset } from "../../lib/api";
+import { uploadAsset } from "../lib/api";
 import "./UploadAsset.css";
 
 export default function UploadAsset({ onClose }: { onClose: () => void }) {

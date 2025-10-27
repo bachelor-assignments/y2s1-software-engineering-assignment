@@ -1,5 +1,5 @@
 export async function apiFetch(
-  input: RequestInfo | URL,
+  path: string,
   init: RequestInit = {}
 ): Promise<Response> {
   const opts: RequestInit = {
@@ -11,7 +11,9 @@ export async function apiFetch(
     },
   };
 
-  let response = await fetch(input, opts);
+  const BACKEND_BASE_URL = process.env.DJANGO_DOCKER_CONTAINER_NAME
+
+  let response = await fetch(`${BACKEND_BASE_URL}${path}`, opts);
 
   // If unauthorized → try refresh
   if (response.status === 401) {
@@ -24,7 +26,7 @@ export async function apiFetch(
 
     // retry original request
     if (refreshResponse.ok) {
-      response = await fetch(input, opts);
+      response = await fetch(`${BACKEND_BASE_URL}${path}`, opts);
     } else {
       console.warn("Refresh failed. Logging out...");
 

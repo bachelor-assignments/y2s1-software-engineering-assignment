@@ -1,9 +1,7 @@
-"use client";
-
 import { useState, useEffect } from "react";
-import AssetGrid from "./components/asset/AssetGrid";
-import UploadAsset from "./components/UploadAsset";
-import { getPublicAssets } from "../lib/api";
+import AssetGrid from "@components/AssetGrid";
+import UploadAsset from "@components/UploadAsset";
+import { getAssetList } from "@utils/assetAPI";
 import "./page.css";
 
 export default function HomePage() {
@@ -12,11 +10,15 @@ export default function HomePage() {
   const [showUpload, setShowUpload] = useState(false);
 
   useEffect(() => {
-    // Fetch all assets once
-    getPublicAssets().then((assets) => {
+    const fetchAssets = async () => {
+      const req = await getAssetList();
+      const assets = await req.json();
       setAllAssets(assets);
       setFilteredAssets(assets);
-    });
+    };
+
+    fetchAssets();
+    }, []);
 
     // Set up search listener
     const searchInput = document.getElementById(
