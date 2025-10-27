@@ -1,59 +1,45 @@
-export async function apiFetch(url: string, options: RequestInit = {}) {
-  const accessToken = localStorage.getItem("access_token");
-  const refreshToken = localStorage.getItem("refresh_token");
-
-  let headers = {
-    "Content-Type": "application/json",
-    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    ...options.headers,
+export async function apiFetch(
+  input: RequestInfo | URL,
+  init: RequestInit = {}
+): Promise<Response> {
+  const opts: RequestInit = {
+    ...init,
+    credentials: "include", // send cookies
+    headers: {
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
   };
 
-  try {
-    let response = await fetch(url, { ...options, headers });
+  let response = await fetch(input, opts);
 
-    if (response.status === 401 && refreshToken) {
-      console.warn("Access token expired. Trying refresh...");
+  // If unauthorized → try refresh
+  if (response.status === 401) {
+    console.warn("Access token expired. Attempting refresh...");
 
-      const newToken = await refreshAccessToken(refreshToken);
-
-      if (newToken) {
-        localStorage.setItem("access_token", newToken);
-
-        headers = {
-          ...headers,
-          Authorization: `Bearer ${newToken}`,
-        };
-        response = await fetch(url, { ...options, headers });
-      } else {
-        throw new Error("Session expired. Please log in again.");
-      }
-    }
-
-    if (!response.ok) {
-      throw new Error(`HTTP Error ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (err) {
-    console.error("Fetch failed:", err);
-    throw err;
-  }
-}
-
-async function refreshAccessToken(refreshToken: string) {
-  try {
-    const response = await fetch("/api/auth/token/refresh/", {
+    const refreshResponse = await fetch("/api/token/refresh/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh: refreshToken }),
+      credentials: "include",
     });
 
-    if (!response.ok) return null;
+    // retry original request
+    if (refreshResponse.ok) {
+      response = await fetch(input, opts);
+    } else {
+      console.warn("Refresh failed. Logging out...");
 
-    const data = await response.json();
-    return data.access; 
-  } catch (err) {
-    console.error("Token refresh failed:", err);
-    return null;
+      await fetch("/api/auth/logout/", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+
+      throw new Error("Session expired. Redirecting to login.");
+    }
   }
+
+  return response;
 }
