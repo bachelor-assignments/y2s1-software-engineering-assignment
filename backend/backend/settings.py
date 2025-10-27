@@ -27,7 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "abc1234")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv("DJANGO_DEBUG", default=0))
+DEBUG = os.environ.get("DJANGO_DEBUG") == "1"
+
+SECURE_COOKIE = os.environ.get("DJANGO_SECURE_COOKIE") == "1"
 
 ALLOWED_HOSTS = []
 
@@ -137,9 +139,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    "DEFAULT_AUTHENTICATION_CLASSES": ("backend.auth.CookieJWTAuthentication",)
 }
 
 # Django Simple JWT configurations
