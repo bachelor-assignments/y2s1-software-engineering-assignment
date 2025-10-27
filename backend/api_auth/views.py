@@ -82,3 +82,13 @@ class MyTokenRefreshView(TokenRefreshView):
         )
 
         return response
+
+
+class LogoutView(TokenRefreshView):
+    def post(self, request):
+        response = Response({"detail": "Logged out"})
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        response.delete_cookie("role")
+        response.delete_cookie("username")
+        return response
