@@ -1,0 +1,22 @@
+.upload-container {
+  text-align: center;
+  padding: 20px;
+}
+
+.upload-dropzone {
+  border: 2px dashed var(--primary);
+  border-radius: 10px;
+  padding: 40px;
+  background: #f0f8ff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.upload-dropzone:hover {
+  background: #e8f3ff;
+}
+
+.upload-list {
+  text-align: left;
+  margin-top: 20px;
+}

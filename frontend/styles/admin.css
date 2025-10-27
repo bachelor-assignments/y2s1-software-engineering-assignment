@@ -1,0 +1,32 @@
+.admin-dashboard {
+  padding: 20px;
+}
+
+.admin-actions {
+  margin-top: 20px;
+}
+
+.user-list {
+  margin-top: 30px;
+  border-top: 1px solid var(--border);
+  padding-top: 15px;
+}
+
+.user-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.user-list button {
+  background: #ff4d4d;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+.user-list button:hover {
+  background: #e63b3b;
+}
