@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect } from "react";
 import AssetGrid from "@components/AssetGrid";
 import UploadAsset from "@components/UploadAsset";
@@ -9,38 +11,7 @@ export default function HomePage() {
   const [filteredAssets, setFilteredAssets] = useState<any[]>([]);
   const [showUpload, setShowUpload] = useState(false);
 
-  useEffect(() => {
-    const fetchAssets = async () => {
-      const req = await getAssetList();
-      const assets = await req.json();
-      setAllAssets(assets);
-      setFilteredAssets(assets);
-    };
 
-    fetchAssets();
-    }, []);
-
-    // Set up search listener
-    const searchInput = document.getElementById(
-      "global-search"
-    ) as HTMLInputElement;
-    if (!searchInput) return;
-
-    const handleSearch = () => {
-      const query = searchInput.value.toLowerCase().trim();
-      if (query === "") {
-        setFilteredAssets(allAssets);
-      } else {
-        const results = allAssets.filter((asset) =>
-          asset.title?.toLowerCase().includes(query)
-        );
-        setFilteredAssets(results);
-      }
-    };
-
-    searchInput.addEventListener("input", handleSearch);
-    return () => searchInput.removeEventListener("input", handleSearch);
-  }, [allAssets]);
 
   return (
     <div className="homepage">

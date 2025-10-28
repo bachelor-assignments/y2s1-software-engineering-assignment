@@ -1,5 +1,5 @@
 import AssetCard from "./AssetCard";
-import "./asset-grid.css";
+import "@styles/asset-grid.css";
 
 export default function AssetGrid({ assets }: { assets: any[] }) {
   if (assets.length === 0) {

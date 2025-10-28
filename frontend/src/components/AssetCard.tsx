@@ -1,8 +1,8 @@
 // frontend/src/app/components/asset/AssetCard.tsx
 "use client";
 
-import "./asset-card.css";
-import { deleteAsset } from "../../../lib/api";
+import "@styles/asset-card.css";
+import { deleteAsset } from "@utils/assetAPI";
 
 export default function AssetCard({
   title,

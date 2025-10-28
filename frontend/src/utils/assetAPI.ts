@@ -21,3 +21,9 @@ export async function getAssetList() {
 //     body: JSON.stringify(data),
 //   });
 // }
+
+export async function deleteAsset(assetUrl: string) {
+  return await apiFetch(`/api/assets/${assetUrl}`, {
+    method: "DELETE",
+  });
+}
