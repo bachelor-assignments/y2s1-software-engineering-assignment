@@ -1,7 +1,7 @@
-import { apiFetch } from "@utils/fetchInterceptor";
+import { apiFetch } from '@utils/fetchInterceptor';
 
 export async function getAssetList() {
-  return await apiFetch("/api/asset/list");
+    return await apiFetch('/api/asset/list/');
 }
 
 // export async function getAssetById(id: string) {
@@ -23,7 +23,8 @@ export async function getAssetList() {
 // }
 
 export async function deleteAsset(assetUrl: string) {
-  return await apiFetch(`/api/assets/${assetUrl}`, {
-    method: "DELETE",
-  });
+    return await apiFetch(`/api/assets/${assetUrl}/`, {
+        method: 'DELETE',
+    });
 }
+

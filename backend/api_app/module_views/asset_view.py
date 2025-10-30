@@ -79,16 +79,15 @@ class AssetListView(APIView):
         pagination_serializer = PaginationSerializer(data=request.query_params)
         pagination_serializer.is_valid(raise_exception=True)
 
-        page_index = pagination_serializer.validated_data['page_index']
-        page_size = pagination_serializer.validated_data['page_size']
-        offset = (page_index - 1) * page_size
+        page_index = pagination_serializer.validated_data["page_index"]
+        page_size = pagination_serializer.validated_data["page_size"]
+        offset = page_index * page_size
         limit = page_size
 
         # TODO: add filtering
-        assets = Asset.objects.all()[offset:offset + limit]
+        assets = Asset.objects.all()[offset : offset + limit]
         serializer = AssetSerializer(assets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 class AssetVersionView(APIView):
