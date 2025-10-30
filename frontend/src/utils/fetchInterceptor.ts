@@ -8,9 +8,7 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
         },
     };
 
-    const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_DJANGO_DOCKER_CONTAINER_NAME;
-    console.log(BACKEND_BASE_URL);
-
+    const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_DJANGO_BACKEND_URL;
     let response = await fetch(`${BACKEND_BASE_URL}${path}`, opts);
 
     // If unauthorized → try refresh

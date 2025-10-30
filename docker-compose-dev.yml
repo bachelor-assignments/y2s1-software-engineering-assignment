@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
       target: development
     init: true
+    env_file:
+      - .env
     volumes:
       - type: bind
         source: ./frontend
@@ -37,7 +39,7 @@ services:
       - frontend
       - backend
     ports:
-      - "${DJANGO_BACKEND_EXPOSE_PORT_DEV}:8000"
+      - "${DJANGO_BACKEND_EXPOSE_PORT}:8000"
 
   5005cmd-database:
     image: postgres:18rc1-alpine3.22
