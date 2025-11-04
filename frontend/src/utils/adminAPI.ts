@@ -7,20 +7,20 @@ export async function getUsers() {
   return res.json();
 }
 
-// Get single user
-export async function getUser(id: string) {
-  const res = await apiFetch(`/api/user/${id}/`);
-  if (!res.ok) throw new Error("Failed to fetch user");
-  return res.json();
-}
 
 // Create user
 export async function createUser(userData: any) {
+  console.log("Creating user with:", userData);
   const res = await apiFetch("/api/user/", {
     method: "POST",
     body: JSON.stringify(userData),
   });
-  if (!res.ok) throw new Error("Failed to create user");
+  console.log("Response status:", res.status);
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Error response from backend:", errorText);
+    throw new Error("Failed to create user");
+  }
   return res.json();
 }
 

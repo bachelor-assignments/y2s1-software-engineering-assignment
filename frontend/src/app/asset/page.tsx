@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { getAssetList } from "@utils/assetAPI";
-import AdminDashboard from "@/app/admin/page"; 
-import "@styles/asset.css";
 
 export default function AssetPage() {
   const [assets, setAssets] = useState<any[]>([]);
@@ -61,7 +59,6 @@ export default function AssetPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search assets..."
-          style={{ marginBottom: "10px", padding: "5px" }}
         />
 
         <ul>
@@ -72,12 +69,15 @@ export default function AssetPage() {
           ))}
         </ul>
 
-        <Link href="/upload">📤 Upload New Asset</Link>
+        <Link href="/upload">Upload New Asset</Link>
       </section>
 
       {role === "admin" && (
-        <section style={{ marginTop: "40px", borderTop: "2px solid #ddd", paddingTop: "20px" }}>
-          <AdminDashboard />
+        <section>
+          <h2>Admin Access</h2>
+          <Link href="/admin">
+            <button>Go to Admin Page</button>
+          </Link>
         </section>
       )}
     </main>

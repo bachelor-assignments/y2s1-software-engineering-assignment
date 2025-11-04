@@ -40,7 +40,7 @@ class AssetSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Asset
+        model = User # serializer wrong model 
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
