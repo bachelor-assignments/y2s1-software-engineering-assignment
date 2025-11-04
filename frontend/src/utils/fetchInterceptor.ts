@@ -15,7 +15,7 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
     if (response.status === 401) {
         console.warn('Access token expired. Attempting refresh...');
 
-        const refreshResponse = await fetch(`${BACKEND_BASE_URL}/api/token/refresh/`, {
+        const refreshResponse = await fetch(`${BACKEND_BASE_URL}/api/auth/token/refresh/`, {
             method: 'POST',
             credentials: 'include',
         });

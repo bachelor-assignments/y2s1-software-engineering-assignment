@@ -5,6 +5,7 @@ export async function loginUser(username: string, password: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
+    credentials: "include", 
   });
 
   if (!response.ok) {
@@ -13,5 +14,5 @@ export async function loginUser(username: string, password: string) {
   }
 
   const data = await response.json();
-  return data; 
+  return data;
 }

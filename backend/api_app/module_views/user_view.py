@@ -45,7 +45,8 @@ class UserListView(APIView):
     permission_classes = [IsAdminPermission]
 
     def get(self, request: Request):
-        return Response("todo", status=status.HTTP_200_OK)
+        users = User.objects.all().values("id", "username", "role", "created_at") # add user list
+        return Response(list(users), status=status.HTTP_200_OK)
 
 
 class UserRolesView(APIView):
