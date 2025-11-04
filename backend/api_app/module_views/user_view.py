@@ -45,6 +45,8 @@ class UserListView(APIView):
     permission_classes = [IsAdminPermission]
 
     def get(self, request: Request):
+        users = User.objects.all()   # add this two line for testing purpose
+        serializer = UserSerializer(users, many=True) # include admin, editors, viewers
         return Response("todo", status=status.HTTP_200_OK)
 
 
