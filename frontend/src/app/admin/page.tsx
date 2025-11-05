@@ -111,6 +111,7 @@ export default function AdminPage() {
           <select name="role" value={formData.role} onChange={handleChange}>
             <option value="admin">Admin</option>
             <option value="editor">Editor</option>
+            <option value="viewer">Viewer</option>
           </select>
         </div>
 
