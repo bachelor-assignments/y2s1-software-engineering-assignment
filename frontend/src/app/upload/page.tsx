@@ -1,78 +1,66 @@
 "use client";
 
 import { useState } from "react";
-import { uploadFile } from "@utils/uploadAPI"; 
 import { useRouter } from "next/navigation";
-import "@styles/upload.css";
-import "@styles/form.css";
+import { uploadAsset } from "@utils/assetAPI"; 
 
-export default function UploadAsset() {
-  const [files, setFiles] = useState<File[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function UploadPage() {
+  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState("");
+  const [metadata, setMetadata] = useState(""); // free-text JSON or comma tags
   const router = useRouter();
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setFiles(Array.from(e.dataTransfer.files));
-  };
+    if (!file || !title) return alert("Title and file required");
 
-  const handleUpload = async () => {
-    if (files.length === 0) {
-      setError("Please select at least one file to upload.");
-      return;
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("title", title);
+
+    // If metadata is JSON, try to parse, else send as simple string in metadata field
+    let metaObj: any = {};
+    try {
+      if (metadata.trim()) metaObj = JSON.parse(metadata);
+    } catch {
+      // fallback: treat as tags comma separated
+      metaObj = { tags: metadata.split(",").map((s) => s.trim()).filter(Boolean) };
     }
-
-    setLoading(true);
-    setError(null);
+    fd.append("metadata", JSON.stringify(metaObj));
 
     try {
-      const formData = new FormData();
-      files.forEach((file) => formData.append("file", file));
-
-      const response = await uploadFile(formData);
-
-      alert("✅ Upload complete!");
-      console.log("Server response:", response);
-
-      router.push("/assets");
-    } catch (err: any) {
+      await uploadAsset(fd);
+      alert("Uploaded");
+      router.push("/asset");
+    } catch (err) {
       console.error("Upload failed:", err);
-      setError(err.message || "Upload failed. Please try again.");
-    } finally {
-      setLoading(false);
+      alert("Upload failed");
     }
-  };
+  }
 
   return (
-    <main>
+    <main style={{ padding: 20 }}>
       <h1>Upload Asset</h1>
+      <form onSubmit={onSubmit}>
+        <div>
+          <label>Title</label><br />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} required />
+        </div>
 
-      <div
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
-        style={{
-          border: "2px dashed gray",
-          padding: "20px",
-          borderRadius: "10px",
-          marginBottom: "10px",
-          backgroundColor: "#fafafa",
-        }}
-      >
-        Drag & Drop files here
-      </div>
+        <div style={{ marginTop: 8 }}>
+          <label>File</label><br />
+          <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} required />
+        </div>
 
-      <button onClick={handleUpload} disabled={loading}>
-        {loading ? "Uploading..." : "Upload"}
-      </button>
+        <div style={{ marginTop: 8 }}>
+          <label>Metadata (JSON) or comma tags</label><br />
+          <textarea value={metadata} onChange={(e) => setMetadata(e.target.value)} rows={4} />
+        </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <ul>
-        {files.map((f, i) => (
-          <li key={i}>{f.name}</li>
-        ))}
-      </ul>
+        <div style={{ marginTop: 10 }}>
+          <button type="submit">Upload</button>
+        </div>
+      </form>
     </main>
   );
 }

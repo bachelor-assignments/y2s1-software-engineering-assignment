@@ -1,5 +1,7 @@
+# api_app/module_views/asset_view.py
+
 import uuid
-from api_app.models import Asset
+from api_app.models import Asset, AssetLog
 from api_app.permissions import RoleCrudPermission
 from api_app.serializers import AssetSerializer, FileSerializer, PaginationSerializer
 from api_app.services import file_service
@@ -10,10 +12,12 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from typing import Any, cast
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class AssetView(APIView):
     permission_classes = [RoleCrudPermission]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request: Request):
         file_serializer = FileSerializer(data=request.data)
@@ -48,13 +52,21 @@ class AssetView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # ✅ Log old version before updating
+        AssetLog.objects.create(
+            title=asset.title,
+            metadata=asset.metadata,
+            asset=asset,
+            owner=asset.owner,
+            updated_by=request.user,
+        )
+
         asset_serializer = AssetSerializer(
             instance=asset, data=request.data, action="put"
         )
         asset_serializer.is_valid(raise_exception=True)
-
-        # TODO: store history
         asset_serializer.save()
+
         return Response(asset_serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request: Request, asset_url=None):
@@ -70,6 +82,8 @@ class AssetView(APIView):
             )
         asset.delete()
         return Response(status=status.HTTP_200_OK)
+    
+    
 
 
 class AssetListView(APIView):
@@ -84,8 +98,13 @@ class AssetListView(APIView):
         offset = page_index * page_size
         limit = page_size
 
-        # TODO: add filtering
-        assets = Asset.objects.all()[offset : offset + limit]
+        # Add optional search by title or metadata
+        search = request.query_params.get("search", "")
+        assets = Asset.objects.all()
+        if search:
+            assets = assets.filter(title__icontains=search) | assets.filter(metadata__icontains=search)
+
+        assets = assets[offset : offset + limit]
         serializer = AssetSerializer(assets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -93,5 +112,21 @@ class AssetListView(APIView):
 class AssetVersionView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request, asset_id=None):
-        return Response("todo", status=status.HTTP_200_OK)
+    def get(self, request: Request, asset_url=None):
+        try:
+            asset = Asset.objects.get(asset_url=asset_url)
+        except Asset.DoesNotExist:
+            return Response("Asset not found", status=status.HTTP_404_NOT_FOUND)
+
+        logs = AssetLog.objects.filter(asset=asset).order_by("-updated_at")
+        data = [
+            {
+                "id": log.id,
+                "title": log.title,
+                "metadata": log.metadata,
+                "updated_at": log.updated_at,
+                "updated_by": log.updated_by.username,
+            }
+            for log in logs
+        ]
+        return Response(data, status=status.HTTP_200_OK)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Asset, User
+from .models import Asset, User, AssetLog
 
 
 class FileSerializer(serializers.Serializer):
@@ -34,6 +34,9 @@ class AssetSerializer(serializers.ModelSerializer):
             self.fields["asset_url"].read_only = True
             self.fields["metadata"].required = False
             self.fields["owner"].read_only = True
+            # ✅ allow optional metadata & title
+            self.fields["metadata"].required = False
+            self.fields["title"].required = True
         elif action == "put":
             self.fields["asset_url"].read_only = True
 
@@ -67,3 +70,11 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)  # ✅ rehash if updated
         instance.save()
         return instance
+    
+class AssetLogSerializer(serializers.ModelSerializer):
+    updated_by = serializers.CharField(source="updated_by.username", read_only=True)
+
+    class Meta:
+        model = AssetLog
+        fields = ["id", "title", "metadata", "updated_at", "updated_by"]
+
