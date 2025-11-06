@@ -34,7 +34,6 @@ class AssetSerializer(serializers.ModelSerializer):
             self.fields["asset_url"].read_only = True
             self.fields["metadata"].required = False
             self.fields["owner"].read_only = True
-            # ✅ allow optional metadata & title
             self.fields["metadata"].required = False
             self.fields["title"].required = True
         elif action == "put":
@@ -43,11 +42,10 @@ class AssetSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User # serializer wrong model 
+        model = User
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
-        # `action` passed from view
         action = kwargs.pop("action", "default")
         super().__init__(*args, **kwargs)
 
@@ -58,7 +56,7 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.pop("password", None)
         user = self.Meta.model(**validated_data)
         if password:
-            user.set_password(password)  # ✅ hash the password
+            user.set_password(password)
         user.save()
         return user
 
@@ -67,14 +65,14 @@ class UserSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
-            instance.set_password(password)  # ✅ rehash if updated
+            instance.set_password(password)
         instance.save()
         return instance
-    
+
+
 class AssetLogSerializer(serializers.ModelSerializer):
     updated_by = serializers.CharField(source="updated_by.username", read_only=True)
 
     class Meta:
         model = AssetLog
         fields = ["id", "title", "metadata", "updated_at", "updated_by"]
-

@@ -1,6 +1,7 @@
 # api_app/module_views/asset_view.py
 
 import uuid
+import json
 from api_app.models import Asset, AssetLog
 from api_app.permissions import RoleCrudPermission
 from api_app.serializers import AssetSerializer, FileSerializer, PaginationSerializer
@@ -82,8 +83,6 @@ class AssetView(APIView):
             )
         asset.delete()
         return Response(status=status.HTTP_200_OK)
-    
-    
 
 
 class AssetListView(APIView):
@@ -98,11 +97,24 @@ class AssetListView(APIView):
         offset = page_index * page_size
         limit = page_size
 
-        # Add optional search by title or metadata
-        search = request.query_params.get("search", "")
+        filter_title = request.query_params.get("title", "").strip()
+        filter_metadata = request.query_params.get("metadata", "").strip()
         assets = Asset.objects.all()
-        if search:
-            assets = assets.filter(title__icontains=search) | assets.filter(metadata__icontains=search)
+
+        if filter_title:
+            assets = assets.filter(title__icontains=filter_title)
+        if filter_metadata:
+            try:
+                metadata_dict = json.loads(filter_metadata)
+
+                for key, value in metadata_dict.items():
+                    assets = assets.filter(**{f"metadata__{key}": value})
+
+            except json.JSONDecodeError:
+                return Response(
+                    {"error": "Invalid metadata JSON format"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         assets = assets[offset : offset + limit]
         serializer = AssetSerializer(assets, many=True)
