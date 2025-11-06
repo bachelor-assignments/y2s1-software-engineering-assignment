@@ -18,7 +18,7 @@ class User(AbstractUser):
 
 
 class Asset(models.Model):
-    asset_url = models.CharField(max_length=100, primary_key=True)
+    file_name = models.CharField(max_length=100, primary_key=True)
     title = models.CharField(max_length=100, unique=True)
     metadata = models.JSONField(default=dict)
     updated_at = models.DateTimeField(auto_now=True)

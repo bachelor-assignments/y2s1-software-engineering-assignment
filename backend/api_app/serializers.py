@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Asset, User, AssetLog
+from api_app.services import file_service
 
 
 class FileSerializer(serializers.Serializer):
@@ -14,6 +15,8 @@ class PaginationSerializer(serializers.Serializer):
 
 
 class AssetSerializer(serializers.ModelSerializer):
+    asset_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Asset
         fields = "__all__"
@@ -26,18 +29,21 @@ class AssetSerializer(serializers.ModelSerializer):
         self.fields["updated_at"].read_only = True
 
         if action == "get":
-            self.fields["asset_url"].required = False
+            self.fields["file_name"].required = False
             self.fields["title"].required = False
             self.fields["metadata"].required = False
             self.fields["owner"].required = False
         elif action == "post":
-            self.fields["asset_url"].read_only = True
+            self.fields["file_name"].read_only = True
             self.fields["metadata"].required = False
             self.fields["owner"].read_only = True
             self.fields["metadata"].required = False
             self.fields["title"].required = True
         elif action == "put":
-            self.fields["asset_url"].read_only = True
+            self.fields["file_name"].read_only = True
+
+    def get_asset_url(self, obj):
+        return file_service.get_file_url(obj.file_name)
 
 
 class UserSerializer(serializers.ModelSerializer):

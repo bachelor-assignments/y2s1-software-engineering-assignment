@@ -1,5 +1,3 @@
-# api_app/module_views/asset_view.py
-
 import uuid
 import json
 from api_app.models import Asset, AssetLog
@@ -33,17 +31,17 @@ class AssetView(APIView):
         asset_serializer.is_valid(raise_exception=True)
 
         asset = cast(
-            Asset, asset_serializer.save(asset_url=file_url, owner=request.user)
+            Asset, asset_serializer.save(file_name=filename, owner=request.user)
         )
 
         return Response(
-            {"file_url": asset.asset_url},
+            {"file_url": file_url},
             status=status.HTTP_201_CREATED,
         )
 
-    def put(self, request: Request, asset_url=None):
+    def put(self, request: Request, asset_filename=None):
         try:
-            asset = Asset.objects.get(asset_url=asset_url)
+            asset = Asset.objects.get(file_name=asset_filename)
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
@@ -53,7 +51,6 @@ class AssetView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # ✅ Log old version before updating
         AssetLog.objects.create(
             title=asset.title,
             metadata=asset.metadata,
@@ -70,9 +67,9 @@ class AssetView(APIView):
 
         return Response(asset_serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request: Request, asset_url=None):
+    def delete(self, request: Request, asset_filename=None):
         try:
-            asset = Asset.objects.get(asset_url=asset_url)
+            asset = Asset.objects.get(file_name=asset_filename)
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
@@ -117,16 +114,16 @@ class AssetListView(APIView):
                 )
 
         assets = assets[offset : offset + limit]
-        serializer = AssetSerializer(assets, many=True)
+        serializer: list[Asset] = AssetSerializer(assets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AssetVersionView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request, asset_url=None):
+    def get(self, request: Request, asset_filename=None):
         try:
-            asset = Asset.objects.get(asset_url=asset_url)
+            asset = Asset.objects.get(file_name=asset_filename)
         except Asset.DoesNotExist:
             return Response("Asset not found", status=status.HTTP_404_NOT_FOUND)
 
