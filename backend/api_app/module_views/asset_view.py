@@ -113,9 +113,21 @@ class AssetListView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        assets = assets[offset : offset + limit]
-        serializer: list[Asset] = AssetSerializer(assets, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        asset_count = assets.count()
+        serializer: list[Asset] = AssetSerializer(
+            assets[offset : offset + limit], many=True
+        )
+
+        return Response(
+            {
+                "assets": serializer.data,
+                "count": asset_count,
+                "page_index": page_index,
+                "page_size": page_size,
+                "total_pages": (asset_count + page_size - 1) // page_size,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class AssetVersionView(APIView):
