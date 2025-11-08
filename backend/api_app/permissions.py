@@ -12,7 +12,7 @@ class RoleCrudPermission(BasePermission):
         if user.role == "admin":
             return True
         elif user.role == "editor":
-            return request.method in ("GET", "POST", "PUT")
+            return request.method in ("GET", "POST", "PUT", "DELETE")  
         elif user.role == "viewer":
             return request.method == "GET"
         else:

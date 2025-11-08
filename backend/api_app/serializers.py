@@ -53,7 +53,7 @@ class AssetSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "passwor" "role", "created_at"]
+        fields = ["id", "username", "password", "role", "created_at"]
 
     def __init__(self, *args, **kwargs):
         action = kwargs.pop("action", "default")
@@ -65,6 +65,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password", None)
         user = self.Meta.model(**validated_data)
+        user.is_active = True  # ensure user can login
         if password:
             user.set_password(password)
         user.save()
