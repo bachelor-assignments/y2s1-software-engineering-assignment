@@ -11,13 +11,33 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from typing import Any, cast
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 
 class AssetView(APIView):
     permission_classes = [RoleCrudPermission]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    # 🆕 GET single asset by ID (changed from asset_filename to asset_id)
+    def get(self, request: Request, asset_id=None):  # changed parameter
+        try:
+            asset = Asset.objects.get(id=asset_id)  # use id instead of file_name
+        except Asset.DoesNotExist:
+            return Response("Asset not found.", status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+
+        # Viewer can only view their own asset
+        if user.role == "viewer" and asset.owner != user:
+            return Response(
+                "You are not allowed to view this asset.",
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = AssetSerializer(asset, action="get")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    # POST remains the same (create new asset)
     def post(self, request: Request):
         file_serializer = FileSerializer(data=request.data)
         file_serializer.is_valid(raise_exception=True)
@@ -39,18 +59,21 @@ class AssetView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-    def put(self, request: Request, asset_filename=None):
+    # PUT to update asset by ID
+    def put(self, request: Request, asset_id=None):  # changed parameter
         try:
-            asset = Asset.objects.get(file_name=asset_filename)
+            asset = Asset.objects.get(id=asset_id)  # use id
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
-        if request.user != asset.owner:
+        user = request.user
+        if user.role == "viewer" and user != asset.owner:
             return Response(
-                "You are not allowed to modify this asset, only the owner can modify.",
+                "You are not allowed to modify this asset.",
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # Save current state to AssetLog
         AssetLog.objects.create(
             title=asset.title,
             metadata=asset.metadata,
@@ -67,19 +90,22 @@ class AssetView(APIView):
 
         return Response(asset_serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request: Request, asset_filename=None):
+    # DELETE asset by ID
+    def delete(self, request: Request, asset_id=None):  # changed parameter
         try:
-            asset = Asset.objects.get(file_name=asset_filename)
+            asset = Asset.objects.get(id=asset_id)  # use id
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
-        if request.user.role != "admin" and request.user != asset.owner:
+        user = request.user
+        if user.role == "viewer" and user != asset.owner:
             return Response(
-                "You are not allowed to delete this asset. Only the owner or an admin can delete.",
+                "You are not allowed to delete this asset.",
                 status=status.HTTP_403_FORBIDDEN,
             )
+
         asset.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)  # 204 for delete
 
 
 class AssetListView(APIView):
@@ -103,10 +129,8 @@ class AssetListView(APIView):
         if filter_metadata:
             try:
                 metadata_dict = json.loads(filter_metadata)
-
                 for key, value in metadata_dict.items():
                     assets = assets.filter(**{f"metadata__{key}": value})
-
             except json.JSONDecodeError:
                 return Response(
                     {"error": "Invalid metadata JSON format"},
@@ -114,9 +138,7 @@ class AssetListView(APIView):
                 )
 
         asset_count = assets.count()
-        serializer: list[Asset] = AssetSerializer(
-            assets[offset : offset + limit], many=True
-        )
+        serializer = AssetSerializer(assets[offset : offset + limit], many=True)
 
         return Response(
             {

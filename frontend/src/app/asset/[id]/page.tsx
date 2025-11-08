@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -8,7 +7,7 @@ import {
   deleteAsset,
   downloadAsset,
   updateAsset,
-} from "@utils/assetAPI"; 
+} from "@utils/assetAPI";
 
 function getCookie(name: string) {
   const v = typeof document === "undefined" ? "" : document.cookie;
@@ -20,7 +19,7 @@ function getCookie(name: string) {
 
 export default function AssetDetail() {
   const params = useParams();
-  const assetId = params?.id as string;
+  const assetId = params?.id as string; // we expect this to be file_name
   const [asset, setAsset] = useState<any | null>(null);
   const [versions, setVersions] = useState<any[]>([]);
   const [role, setRole] = useState<string | null>(null);
@@ -55,7 +54,7 @@ export default function AssetDetail() {
   async function onDelete() {
     if (!confirm("Delete this asset?")) return;
     try {
-      await deleteAsset(assetId);
+      await deleteAsset(asset.file_name);
       router.push("/asset");
     } catch (err) {
       console.error("Delete failed:", err);
@@ -77,7 +76,7 @@ export default function AssetDetail() {
     const newTitle = prompt("New title", asset?.title || "");
     if (!newTitle || newTitle === asset?.title) return;
     try {
-      await updateAsset(assetId, { title: newTitle });
+      await updateAsset(asset.file_name, { title: newTitle });
       await fetchAll();
       alert("Updated");
     } catch (err) {
@@ -111,7 +110,9 @@ export default function AssetDetail() {
         )}
         {!isImage && !isPdf && !isVideo && (
           <div>
-            <a href={url} target="_blank" rel="noreferrer">Open file</a>
+            <a href={url} target="_blank" rel="noreferrer">
+              Open file
+            </a>
           </div>
         )}
       </div>
@@ -131,7 +132,6 @@ export default function AssetDetail() {
             {versions.map((v) => (
               <li key={v.id}>
                 {v.title} — by {v.updated_by} at {new Date(v.updated_at).toLocaleString()}
-                {/* future: add download/revert buttons here */}
               </li>
             ))}
           </ul>

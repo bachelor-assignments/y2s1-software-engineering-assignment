@@ -1,16 +1,9 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  getAssetList,
-  deleteAsset,
-  downloadAsset,
-  uploadAsset,
-} from "@utils/assetAPI";
+import { getAssetList, deleteAsset, downloadAsset, uploadAsset, updateAsset } from "@utils/assetAPI";
 
-// small helper to read cookies (no external lib)
+// read role & username from cookie
 function getCookie(name: string) {
   const v = typeof document === "undefined" ? "" : document.cookie;
   return v
@@ -21,22 +14,16 @@ function getCookie(name: string) {
 
 export default function AssetPage() {
   const [assets, setAssets] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [pageIndex] = useState(0);
-  const [pageSize] = useState(20);
+  const [metadataSearch, setMetadataSearch] = useState("");
   const [role, setRole] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    // read role and username cookie set by backend
-    const r = getCookie("role") || null;
-    const u = getCookie("username") || null;
-    setRole(r);
-    setUsername(u);
+    setRole(getCookie("role") || null);
+    setUsername(getCookie("username") || null);
     fetchAssets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -44,10 +31,8 @@ export default function AssetPage() {
   async function fetchAssets() {
     setLoading(true);
     try {
-      const res = await getAssetList(search, pageIndex, pageSize);
-      // backend may return array or { results: [...] }
-      const list = Array.isArray(res) ? res : res.results || res;
-      setAssets(list);
+      const list = await getAssetList(metadataSearch, 0, 20);
+      setAssets(Array.isArray(list) ? list : list.assets || list.results || []);
     } catch (err) {
       console.error("Failed to fetch assets:", err);
     } finally {
@@ -55,23 +40,15 @@ export default function AssetPage() {
     }
   }
 
-  async function handleDelete(asset_url: string) {
+  async function handleDelete(asset_id: number) {
     if (!confirm("Delete this asset?")) return;
     try {
-      await deleteAsset(asset_url);
+      await deleteAsset(asset_id);
       await fetchAssets();
+      alert("Deleted successfully");
     } catch (err) {
       console.error("Delete failed:", err);
       alert("Delete failed");
-    }
-  }
-
-  async function handleDownload(file_url: string, title?: string) {
-    try {
-      await downloadAsset(file_url, title);
-    } catch (err) {
-      console.error("Download failed:", err);
-      alert("Download failed");
     }
   }
 
@@ -91,58 +68,33 @@ export default function AssetPage() {
       await fetchAssets();
       alert("Upload successful");
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error("Upload failed:", err);
       alert("Upload failed");
     }
   }
 
-  // show edit prompt for title/metadata
-  async function handleEdit(asset: any) {
-    const newTitle = prompt("New title", asset.title || "");
-    if (!newTitle || newTitle === asset.title) return;
-    try {
-      await fetch(`/api/asset/${encodeURIComponent(asset.asset_url)}/`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle }),
-      });
-      await fetchAssets();
-      alert("Updated");
-    } catch (err) {
-      console.error("Update failed:", err);
-      alert("Update failed");
-    }
-  }
-
-  // permission: admin/editor can edit/delete any; others can only edit/delete own uploads
   function canModify(asset: any) {
     if (!role) return false;
     if (role === "admin" || role === "editor") return true;
-    // viewer can modify their own upload only
-    if (asset.owner?.username && username && asset.owner.username === decodeURIComponent(username))
-      return true;
-    return false;
+    return asset.owner?.username === decodeURIComponent(username || "");
   }
 
   return (
     <main style={{ padding: 20 }}>
       <h1>Assets</h1>
 
+      {/* Metadata search */}
       <div style={{ marginBottom: 12 }}>
         <input
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          placeholder='Search metadata e.g. {"category":"report"}'
+          value={metadataSearch}
+          onChange={(e) => setMetadataSearch(e.target.value)}
         />
-        <button onClick={() => fetchAssets()} style={{ marginLeft: 8 }}>
-          Search
-        </button>
+        <button onClick={fetchAssets} style={{ marginLeft: 8 }}>Search</button>
       </div>
 
-      {/* Upload form - allowed for all roles per your rule */}
+      {/* Upload */}
       <section style={{ marginBottom: 20 }}>
-        <h3>Upload (all roles)</h3>
         <form onSubmit={handleUpload}>
           <input
             required
@@ -159,46 +111,61 @@ export default function AssetPage() {
         </form>
       </section>
 
-      {/* Admin panel button shown only if role is admin */}
+      {/* Admin panel */}
       {role === "admin" && (
         <div style={{ marginBottom: 10 }}>
-          <Link href="/admin">
-            <button>Admin Panel</button>
-          </Link>
+          <Link href="/admin"><button>Admin Panel</button></Link>
         </div>
       )}
 
+      {/* Asset list */}
       {loading ? (
         <p>Loading...</p>
       ) : (
         <ul>
           {assets.map((a) => (
-            <li key={a.asset_url} style={{ marginBottom: 8 }}>
-              <strong>{a.title}</strong> — owner: {a.owner?.username || "—"}
-              {"  "}
-              <Link href={`/asset/${encodeURIComponent(a.asset_url)}`}>
-                <button style={{ marginLeft: 8 }}>Preview</button>
-              </Link>
-              {"  "}
-              {a.asset_url && a.asset_url.startsWith("http") ? (
-                <button
-                  onClick={() => handleDownload(a.asset_url, a.title)}
-                  style={{ marginLeft: 6 }}
-                >
-                  Download
-                </button>
-              ) : (
-                <a href={a.asset_url} target="_blank" rel="noreferrer" style={{ marginLeft: 6 }}>
-                  Open
-                </a>
+            <li key={a.file_name} style={{ marginBottom: 8 }}>
+              <strong>{a.title}</strong> — owner: {a.owner?.username || "—"}{" "}
+              <Link href={`/asset/${encodeURIComponent(a.file_name)}`}><button style={{ marginLeft: 8 }}>Preview</button></Link>
+              {a.asset_url && a.asset_url.startsWith("http") && (
+                <button onClick={() => downloadAsset(a.asset_url, a.title)} style={{ marginLeft: 6 }}>Download</button>
               )}
-
               {canModify(a) && (
                 <>
-                  <button onClick={() => handleEdit(a)} style={{ marginLeft: 6 }}>
+                  {/* Edit button */}
+                  <button
+                    style={{ marginLeft: 6 }}
+                    onClick={async () => {
+                      const newTitle = prompt("New title", a.title || "");
+                      if (!newTitle || newTitle === a.title) return;
+                      try {
+                        await updateAsset(a.id, { title: newTitle }); // <-- use id
+                        await fetchAssets();
+                        alert("Updated successfully");
+                      } catch (err) {
+                        console.error("Update failed:", err);
+                        alert("Update failed");
+                      }
+                    }}
+                  >
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(a.asset_url)} style={{ marginLeft: 6 }}>
+
+                  {/* Delete button */}
+                  <button
+                    style={{ marginLeft: 6 }}
+                    onClick={async () => {
+                      if (!confirm("Delete this asset?")) return;
+                      try {
+                        await deleteAsset(a.id); // <-- use id
+                        await fetchAssets();
+                        alert("Deleted successfully");
+                      } catch (err) {
+                        console.error("Delete failed:", err);
+                        alert("Delete failed");
+                      }
+                    }}
+                  >
                     Delete
                   </button>
                 </>

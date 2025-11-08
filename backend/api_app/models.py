@@ -18,7 +18,8 @@ class User(AbstractUser):
 
 
 class Asset(models.Model):
-    file_name = models.CharField(max_length=100, primary_key=True)
+    id = models.AutoField(primary_key=True)  # <-- changed from file_name PK to integer PK
+    file_name = models.CharField(max_length=100, unique=True)  # <-- keep unique
     title = models.CharField(max_length=100, unique=True)
     metadata = models.JSONField(default=dict)
     updated_at = models.DateTimeField(auto_now=True)

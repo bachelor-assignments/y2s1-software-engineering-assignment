@@ -15,7 +15,11 @@ class PaginationSerializer(serializers.Serializer):
 
 
 class AssetSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)  # <-- optional, ensure frontend uses id
     asset_url = serializers.SerializerMethodField()
+    owner = serializers.CharField(source="owner.username", read_only=True)
+    metadata = serializers.JSONField(required=False) 
+
 
     class Meta:
         model = Asset
@@ -49,7 +53,7 @@ class AssetSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "role", "created_at"]
+        fields = ["id", "username", "passwor" "role", "created_at"]
 
     def __init__(self, *args, **kwargs):
         action = kwargs.pop("action", "default")
