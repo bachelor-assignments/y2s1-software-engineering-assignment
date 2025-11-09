@@ -1,7 +1,7 @@
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
     const opts: RequestInit = {
         ...init,
-        credentials: 'include', // send cookies
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             ...(init.headers || {}),

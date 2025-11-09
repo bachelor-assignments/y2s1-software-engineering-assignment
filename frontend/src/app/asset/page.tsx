@@ -26,7 +26,6 @@ export default function AssetPage() {
     setRole(getCookie("role") || null);
     setUsername(getCookie("username") || null);
     fetchAssets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchAssets() {
@@ -61,12 +60,12 @@ async function handleSearchSuggest(query: string) {
     return;
   }
   try {
-    const list = await getAssetList("", 0, 100); //  Get all assets for filtering
+    const list = await getAssetList("", 0, 100); 
     const allTitles = list.map((a: any) => a.title);
     const matched = allTitles.filter((t: string) =>
       t.toLowerCase().includes(query.toLowerCase())
     );
-    setSuggestions(matched.slice(0, 5)); // show top 5 suggestions
+    setSuggestions(matched.slice(0, 5)); 
   } catch (err) {
     console.error("Suggestion failed:", err);
   }
@@ -104,14 +103,14 @@ async function handleSearchSuggest(query: string) {
     <main style={{ padding: 20 }}>
       <h1>Assets</h1>
 
-      {/* Metadata search with dropdown suggestions (no CSS) */}
+      {/* Search*/}
       <div>
         <input
           placeholder='Search metadata e.g. {"category":"report"}'
           value={metadataSearch}
           onChange={(e) => {
             setMetadataSearch(e.target.value);
-            handleSearchSuggest(e.target.value); // Trigger suggestions
+            handleSearchSuggest(e.target.value); 
           }}
         />
         <button onClick={fetchAssets}>Search</button>
@@ -173,7 +172,7 @@ async function handleSearchSuggest(query: string) {
                       const newTitle = prompt("New title", a.title || "");
                       if (!newTitle || newTitle === a.title) return;
                       try {
-                        await updateAsset(a.id, { title: newTitle }); // <-- use id
+                        await updateAsset(a.id, { title: newTitle });
                         await fetchAssets();
                         alert("Updated successfully");
                       } catch (err) {
@@ -191,7 +190,7 @@ async function handleSearchSuggest(query: string) {
                     onClick={async () => {
                       if (!confirm("Delete this asset?")) return;
                       try {
-                        await deleteAsset(a.id); // <-- use id
+                        await deleteAsset(a.id); 
                         await fetchAssets();
                         alert("Deleted successfully");
                       } catch (err) {

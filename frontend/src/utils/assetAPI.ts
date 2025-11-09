@@ -16,22 +16,18 @@ export async function uploadAsset(formData: FormData) {
   return res.json();
 }
 
-// --- List assets (metadata/title search with safety) ---
+// --- List assets ---
 export async function getAssetList(metadataSearch = "", page_index = 0, page_size = 20) {
   const params = new URLSearchParams();
 
-  // Limit page_size to max 20
   params.set("page_index", String(page_index));
   params.set("page_size", Math.min(page_size, 20).toString());
 
-  // Handle metadata JSON or plain text for title
   if (metadataSearch) {
     try {
-      // Try parse as JSON → send as metadata
       JSON.parse(metadataSearch);
       params.set("metadata", metadataSearch);
     } catch {
-      // If plain text → search by title
       params.set("title", metadataSearch);
     }
   }
@@ -45,7 +41,6 @@ export async function getAssetList(metadataSearch = "", page_index = 0, page_siz
   const data = await res.json();
   const assetsArray = Array.isArray(data) ? data : data.assets || data.results || [];
 
-  // Ensure owner is always an object with username to prevent "—" display
   return assetsArray.map(a => ({
     ...a,
     owner: a.owner ? { username: a.owner } : { username: "—" },

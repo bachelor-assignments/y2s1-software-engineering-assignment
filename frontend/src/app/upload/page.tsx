@@ -16,7 +16,6 @@ export default function UploadPage() {
     fd.append("file", file);
     fd.append("title", title);
 
-    // If metadata is JSON, try to parse, else send as simple tags array
     let metaObj: any = {};
     try {
       if (metadata.trim()) metaObj = JSON.parse(metadata);

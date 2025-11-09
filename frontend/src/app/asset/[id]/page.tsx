@@ -19,7 +19,7 @@ function getCookie(name: string) {
 
 export default function AssetDetail() {
   const params = useParams();
-  const assetId = params?.id as string; // we expect this to be file_name
+  const assetId = params?.id as string; 
   const [asset, setAsset] = useState<any | null>(null);
   const [versions, setVersions] = useState<any[]>([]);
   const [role, setRole] = useState<string | null>(null);
@@ -30,7 +30,6 @@ export default function AssetDetail() {
     setRole(getCookie("role") || null);
     setUsername(getCookie("username") || null);
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetId]);
 
   async function fetchAll() {
@@ -65,7 +64,7 @@ export default function AssetDetail() {
     const newTitle = prompt("New title", asset?.title || "");
     if (!newTitle || newTitle === asset?.title) return;
     try {
-      await updateAsset(asset.id, { title: newTitle });  // <-- use asset.id
+      await updateAsset(asset.id, { title: newTitle }); 
       await fetchAll();
       alert("Updated");
     } catch (err) {
@@ -77,7 +76,7 @@ export default function AssetDetail() {
   async function onDelete() {
     if (!confirm("Delete this asset?")) return;
     try {
-      await deleteAsset(asset.id);  // <-- use asset.id
+      await deleteAsset(asset.id);  
       router.push("/asset");
     } catch (err) {
       console.error("Delete failed:", err);
@@ -87,7 +86,6 @@ export default function AssetDetail() {
 
   if (!asset) return <p>Loading...</p>;
 
-  // basic preview handling
   const url = asset.asset_url;
   const isImage = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url);
   const isPdf = /\.pdf$/i.test(url);

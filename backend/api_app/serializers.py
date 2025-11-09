@@ -15,7 +15,7 @@ class PaginationSerializer(serializers.Serializer):
 
 
 class AssetSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)  # <-- optional, ensure frontend uses id
+    id = serializers.IntegerField(read_only=True)  
     asset_url = serializers.SerializerMethodField()
     owner = serializers.CharField(source="owner.username", read_only=True)
     metadata = serializers.JSONField(required=False) 
@@ -26,7 +26,6 @@ class AssetSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
-        # `action` passed from view
         action = kwargs.pop("action", "default")
         super().__init__(*args, **kwargs)
 
@@ -65,7 +64,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password", None)
         user = self.Meta.model(**validated_data)
-        user.is_active = True  # ensure user can login
+        user.is_active = True 
         if password:
             user.set_password(password)
         user.save()

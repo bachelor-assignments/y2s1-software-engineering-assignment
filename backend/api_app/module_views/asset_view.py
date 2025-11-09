@@ -18,10 +18,9 @@ class AssetView(APIView):
     permission_classes = [RoleCrudPermission]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    #GET single asset by ID (changed from asset_filename to asset_id)
-    def get(self, request: Request, asset_id=None):  # changed parameter
+    def get(self, request: Request, asset_id=None): 
         try:
-            asset = Asset.objects.get(id=asset_id)  # use id instead of file_name
+            asset = Asset.objects.get(id=asset_id) 
         except Asset.DoesNotExist:
             return Response("Asset not found.", status=status.HTTP_404_NOT_FOUND)
 
@@ -30,18 +29,15 @@ class AssetView(APIView):
         serializer = AssetSerializer(asset, action="get")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # POST remains the same (create new asset)
     def post(self, request: Request):
         file_serializer = FileSerializer(data=request.data)
         file_serializer.is_valid(raise_exception=True)
         validated_data = cast(dict[str, Any], file_serializer.validated_data)
         uploaded_file = cast(UploadedFile, validated_data.get("file"))
 
-        # Auto version naming if same title exists
         base_title = request.data.get("title")
         if base_title:
             existing_assets = Asset.objects.filter(title__startswith=base_title).count()
-            # background -> background (1), background (2), etc.
             if existing_assets > 0:
                 request.data["title"] = f"{base_title} ({existing_assets})"
 
@@ -60,10 +56,9 @@ class AssetView(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-    # PUT to update asset by ID
-    def put(self, request: Request, asset_id=None):  # changed parameter
+    def put(self, request: Request, asset_id=None):
         try:
-            asset = Asset.objects.get(id=asset_id)  # use id
+            asset = Asset.objects.get(id=asset_id) 
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
@@ -74,7 +69,6 @@ class AssetView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # Save current state to AssetLog
         AssetLog.objects.create(
             title=asset.title,
             metadata=asset.metadata,
@@ -91,10 +85,9 @@ class AssetView(APIView):
 
         return Response(asset_serializer.data, status=status.HTTP_200_OK)
 
-    # DELETE asset by ID
-    def delete(self, request: Request, asset_id=None):  # changed parameter
+    def delete(self, request: Request, asset_id=None):  
         try:
-            asset = Asset.objects.get(id=asset_id)  # use id
+            asset = Asset.objects.get(id=asset_id)  
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
@@ -106,7 +99,7 @@ class AssetView(APIView):
             )
 
         asset.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)  # 204 for delete
+        return Response(status=status.HTTP_204_NO_CONTENT)  
 
 
 class AssetListView(APIView):
