@@ -37,7 +37,7 @@ export default function AssetDetail() {
     try {
       const d = await getAssetDetail(assetId);
       setAsset(d);
-      const v = await getAssetVersions(assetId);
+      const v = await getAssetVersions(assetId); 
       setVersions(Array.isArray(v) ? v : v.results || v);
     } catch (err) {
       console.error("Fetch asset failed:", err);
@@ -49,17 +49,6 @@ export default function AssetDetail() {
     if (role === "admin" || role === "editor") return true;
     if (asset.owner?.username && username && asset.owner.username === decodeURIComponent(username)) return true;
     return false;
-  }
-
-  async function onDelete() {
-    if (!confirm("Delete this asset?")) return;
-    try {
-      await deleteAsset(asset.file_name);
-      router.push("/asset");
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Delete failed");
-    }
   }
 
   async function onDownload() {
@@ -76,12 +65,23 @@ export default function AssetDetail() {
     const newTitle = prompt("New title", asset?.title || "");
     if (!newTitle || newTitle === asset?.title) return;
     try {
-      await updateAsset(asset.file_name, { title: newTitle });
+      await updateAsset(asset.id, { title: newTitle });  // <-- use asset.id
       await fetchAll();
       alert("Updated");
     } catch (err) {
       console.error("Update failed:", err);
       alert("Update failed");
+    }
+  }
+
+  async function onDelete() {
+    if (!confirm("Delete this asset?")) return;
+    try {
+      await deleteAsset(asset.id);  // <-- use asset.id
+      router.push("/asset");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed");
     }
   }
 

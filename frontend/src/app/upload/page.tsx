@@ -40,8 +40,7 @@ export default function UploadPage() {
       <form onSubmit={onSubmit}>
         <div>
           <label>Title</label><br />
-          <input value={title} onChange={(e) => setTitle(e.target.value)} required />
-        </div>
+          <input  value={title}  onChange={(e) => setTitle(e.target.value)}  placeholder='Title (e.g. coverpage, background, report)'  required/>        </div>
         <div style={{ marginTop: 8 }}>
           <label>File</label><br />
           <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} required />

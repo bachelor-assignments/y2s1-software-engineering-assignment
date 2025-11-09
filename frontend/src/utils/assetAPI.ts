@@ -16,18 +16,32 @@ export async function uploadAsset(formData: FormData) {
   return res.json();
 }
 
-// --- List assets (metadata search only) ---
+// --- List assets (metadata/title search with safety) ---
 export async function getAssetList(metadataSearch = "", page_index = 0, page_size = 20) {
   const params = new URLSearchParams();
-  if (metadataSearch) params.set("metadata", metadataSearch);
+
+  // Limit page_size to max 20
   params.set("page_index", String(page_index));
-  params.set("page_size", String(page_size));
+  params.set("page_size", Math.min(page_size, 20).toString());
+
+  // Handle metadata JSON or plain text for title
+  if (metadataSearch) {
+    try {
+      // Try parse as JSON → send as metadata
+      JSON.parse(metadataSearch);
+      params.set("metadata", metadataSearch);
+    } catch {
+      // If plain text → search by title
+      params.set("title", metadataSearch);
+    }
+  }
 
   const res = await apiFetch(`/api/asset/list/?${params.toString()}`);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || "Failed to fetch assets");
   }
+
   const data = await res.json();
   const assetsArray = Array.isArray(data) ? data : data.assets || data.results || [];
 
@@ -37,6 +51,7 @@ export async function getAssetList(metadataSearch = "", page_index = 0, page_siz
     owner: a.owner ? { username: a.owner } : { username: "—" },
   }));
 }
+
 
 // --- Get asset detail ---
 export async function getAssetDetail(fileNameOrUrl: string) {
@@ -53,17 +68,16 @@ export async function getAssetDetail(fileNameOrUrl: string) {
 }
 
 // --- Versions ---
-export async function getAssetVersions(fileName: string) {
-  const encoded = encodeURIComponent(fileName);
-  const res = await apiFetch(`/api/asset/${encoded}/versions/`, {
-    credentials: "include", // <-- add this line
-  });
+export async function getAssetVersions(assetId: number | string) {
+  const encoded = encodeURIComponent(String(assetId));
+  const res = await apiFetch(`/api/asset/${encoded}/versions/`, { method: "GET", credentials: "include" });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || "Failed to fetch asset versions");
   }
   return res.json();
 }
+
 
 // Delete asset
 export async function deleteAsset(assetId: number) {

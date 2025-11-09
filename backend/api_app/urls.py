@@ -13,5 +13,5 @@ urlpatterns = [
     path("asset/", asset_view.AssetView.as_view()),
     path("asset/list/", asset_view.AssetListView.as_view()),
     path("asset/<int:asset_id>/", asset_view.AssetView.as_view()),
-    path("asset/<str:asset_filename>/versions/", asset_view.AssetVersionView.as_view()),
+    path("asset/<int:asset_id>/versions/", asset_view.AssetVersionView.as_view()),
 ]

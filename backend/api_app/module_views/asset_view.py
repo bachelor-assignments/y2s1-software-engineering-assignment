@@ -18,7 +18,7 @@ class AssetView(APIView):
     permission_classes = [RoleCrudPermission]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    # 🆕 GET single asset by ID (changed from asset_filename to asset_id)
+    #GET single asset by ID (changed from asset_filename to asset_id)
     def get(self, request: Request, asset_id=None):  # changed parameter
         try:
             asset = Asset.objects.get(id=asset_id)  # use id instead of file_name
@@ -26,13 +26,6 @@ class AssetView(APIView):
             return Response("Asset not found.", status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-
-        # Viewer can only view their own asset
-        if user.role == "viewer" and asset.owner != user:
-            return Response(
-                "You are not allowed to view this asset.",
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
         serializer = AssetSerializer(asset, action="get")
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -43,6 +36,14 @@ class AssetView(APIView):
         file_serializer.is_valid(raise_exception=True)
         validated_data = cast(dict[str, Any], file_serializer.validated_data)
         uploaded_file = cast(UploadedFile, validated_data.get("file"))
+
+        # Auto version naming if same title exists
+        base_title = request.data.get("title")
+        if base_title:
+            existing_assets = Asset.objects.filter(title__startswith=base_title).count()
+            # background -> background (1), background (2), etc.
+            if existing_assets > 0:
+                request.data["title"] = f"{base_title} ({existing_assets})"
 
         filename = f"{uuid.uuid4()}_{uploaded_file.name}"
         file_url = file_service.upload_file_to_minio(uploaded_file, filename)
@@ -155,9 +156,9 @@ class AssetListView(APIView):
 class AssetVersionView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request, asset_filename=None):
+    def get(self, request: Request, asset_id=None):
         try:
-            asset = Asset.objects.get(file_name=asset_filename)
+            asset = Asset.objects.get(id=asset_id)
         except Asset.DoesNotExist:
             return Response("Asset not found", status=status.HTTP_404_NOT_FOUND)
 

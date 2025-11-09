@@ -20,6 +20,7 @@ export default function AssetPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     setRole(getCookie("role") || null);
@@ -35,6 +36,7 @@ export default function AssetPage() {
       setAssets(Array.isArray(list) ? list : list.assets || list.results || []);
     } catch (err) {
       console.error("Failed to fetch assets:", err);
+      alert("Search failed. Ensure JSON format or use plain text for title.");    
     } finally {
       setLoading(false);
     }
@@ -51,6 +53,25 @@ export default function AssetPage() {
       alert("Delete failed");
     }
   }
+
+
+async function handleSearchSuggest(query: string) {
+  if (!query.trim()) {
+    setSuggestions([]);
+    return;
+  }
+  try {
+    const list = await getAssetList("", 0, 100); //  Get all assets for filtering
+    const allTitles = list.map((a: any) => a.title);
+    const matched = allTitles.filter((t: string) =>
+      t.toLowerCase().includes(query.toLowerCase())
+    );
+    setSuggestions(matched.slice(0, 5)); // show top 5 suggestions
+  } catch (err) {
+    console.error("Suggestion failed:", err);
+  }
+}
+
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
@@ -83,14 +104,27 @@ export default function AssetPage() {
     <main style={{ padding: 20 }}>
       <h1>Assets</h1>
 
-      {/* Metadata search */}
-      <div style={{ marginBottom: 12 }}>
+      {/* Metadata search with dropdown suggestions (no CSS) */}
+      <div>
         <input
           placeholder='Search metadata e.g. {"category":"report"}'
           value={metadataSearch}
-          onChange={(e) => setMetadataSearch(e.target.value)}
+          onChange={(e) => {
+            setMetadataSearch(e.target.value);
+            handleSearchSuggest(e.target.value); // Trigger suggestions
+          }}
         />
-        <button onClick={fetchAssets} style={{ marginLeft: 8 }}>Search</button>
+        <button onClick={fetchAssets}>Search</button>
+
+        {suggestions.length > 0 && (
+          <ul>
+            {suggestions.map((s, idx) => (
+              <li key={idx} onClick={() => { setMetadataSearch(s); setSuggestions([]); }}>
+                {s}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Upload */}
@@ -126,7 +160,7 @@ export default function AssetPage() {
           {assets.map((a) => (
             <li key={a.file_name} style={{ marginBottom: 8 }}>
               <strong>{a.title}</strong> — owner: {a.owner?.username || "—"}{" "}
-              <Link href={`/asset/${encodeURIComponent(a.file_name)}`}><button style={{ marginLeft: 8 }}>Preview</button></Link>
+              <Link href={`/asset/${encodeURIComponent(String(a.id))}`}><button style={{ marginLeft: 8 }}>Preview</button></Link>
               {a.asset_url && a.asset_url.startsWith("http") && (
                 <button onClick={() => downloadAsset(a.asset_url, a.title)} style={{ marginLeft: 6 }}>Download</button>
               )}
