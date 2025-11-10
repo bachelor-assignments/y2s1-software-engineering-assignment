@@ -23,15 +23,11 @@ class AssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asset
         fields = "__all__"
+        read_only_fields = ["file_name", "asset_url", "updated_at", "id"]
 
     def __init__(self, *args, **kwargs):
         action = kwargs.pop("action", "default")
         super().__init__(*args, **kwargs)
-
-        self.fields["id"].read_only = False
-        self.fields["updated_at"].read_only = True
-        self.fields["asset_url"].read_only = True
-        self.fields["file_name"].read_only = True
 
         if action == "get":
             self.fields["id"].required = False
