@@ -37,7 +37,7 @@ class UserView(APIView):
             return Response("User does not exist.", status=status.HTTP_404_NOT_FOUND)
 
         user.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserListView(APIView):
