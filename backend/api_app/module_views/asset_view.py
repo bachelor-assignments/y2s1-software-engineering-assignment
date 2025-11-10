@@ -1,5 +1,6 @@
 import uuid
 import json
+import os
 from api_app.models import Asset, AssetLog
 from api_app.permissions import RoleCrudPermission
 from api_app.serializers import AssetSerializer, FileSerializer, PaginationSerializer
@@ -40,7 +41,8 @@ class AssetView(APIView):
         # ensure filename dont exceed max length defined in model
         ASSET_FILENAME_MAX_LENGTH = Asset._meta.get_field("file_name").max_length
         if len(filename) > ASSET_FILENAME_MAX_LENGTH:
-            filename = filename[:ASSET_FILENAME_MAX_LENGTH]
+            name, ext = os.path.splitext(filename)
+            filename = name[: ASSET_FILENAME_MAX_LENGTH - len(ext)] + ext
 
         file_url = file_service.upload_file_to_minio(uploaded_file, filename)
 

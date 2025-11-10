@@ -15,11 +15,10 @@ class PaginationSerializer(serializers.Serializer):
 
 
 class AssetSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)  
+    id = serializers.IntegerField(read_only=True)
     asset_url = serializers.SerializerMethodField()
     owner = serializers.CharField(source="owner.username", read_only=True)
-    metadata = serializers.JSONField(required=False) 
-
+    metadata = serializers.JSONField(required=False)
 
     class Meta:
         model = Asset
@@ -29,21 +28,30 @@ class AssetSerializer(serializers.ModelSerializer):
         action = kwargs.pop("action", "default")
         super().__init__(*args, **kwargs)
 
+        self.fields["id"].read_only = False
         self.fields["updated_at"].read_only = True
+        self.fields["asset_url"].read_only = True
+        self.fields["file_name"].read_only = True
 
         if action == "get":
+            self.fields["id"].required = False
+            self.fields["owner"].required = False
+            self.fields["asset_url"].required = False
+            self.fields["updated_at"].required = False
             self.fields["file_name"].required = False
             self.fields["title"].required = False
             self.fields["metadata"].required = False
-            self.fields["owner"].required = False
+
         elif action == "post":
-            self.fields["file_name"].read_only = True
-            self.fields["metadata"].required = False
             self.fields["owner"].read_only = True
             self.fields["metadata"].required = False
             self.fields["title"].required = True
+
         elif action == "put":
-            self.fields["file_name"].read_only = True
+            self.fields["metadata"].required = False
+            self.fields["owner"].required = False
+            self.fields["metadata"].required = False
+            self.fields["title"].required = False
 
     def get_asset_url(self, obj):
         return file_service.get_file_url(obj.file_name)
@@ -64,7 +72,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password", None)
         user = self.Meta.model(**validated_data)
-        user.is_active = True 
+        user.is_active = True
         if password:
             user.set_password(password)
         user.save()
