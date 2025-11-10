@@ -116,3 +116,6 @@ export async function downloadAsset(file_url: string, filename?: string) {
   a.remove();
   window.URL.revokeObjectURL(url);
 }
+
+
+
