@@ -61,12 +61,12 @@ export default function AssetDetail() {
   }
 
   async function onEdit() {
-    const newTitle = prompt("New title", asset?.title || "");
+    const newTitle = prompt("Enter new title", asset?.title || "");
     if (!newTitle || newTitle === asset?.title) return;
     try {
-      await updateAsset(asset.id, { title: newTitle }); 
+      await updateAsset(asset.id, { title: newTitle });
       await fetchAll();
-      alert("Updated");
+      alert("Metadata updated successfully!");
     } catch (err) {
       console.error("Update failed:", err);
       alert("Update failed");
@@ -117,8 +117,13 @@ export default function AssetDetail() {
 
       <div style={{ marginTop: 12 }}>
         <button onClick={onDownload}>Download</button>
-        {canModify() && <button onClick={onEdit} style={{ marginLeft: 8 }}>Edit</button>}
-        {canModify() && <button onClick={onDelete} style={{ marginLeft: 8 }}>Delete</button>}
+
+        {role !== "viewer" && (
+          <>
+            <button onClick={onEdit} style={{ marginLeft: 8 }}>Edit Metadata</button>
+            <button onClick={onDelete} style={{ marginLeft: 8 }}>Delete</button>
+          </>
+        )}
       </div>
 
       <section style={{ marginTop: 24 }}>

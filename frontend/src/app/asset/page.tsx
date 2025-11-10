@@ -95,11 +95,11 @@ async function handleSearchSuggest(query: string) {
     }
   }
 
-  function canModify(asset: any) {
-    if (!role) return false;
-    if (role === "admin" || role === "editor") return true;
-    return asset.owner?.username === decodeURIComponent(username || "");
-  }
+    function canModify(asset: any) {
+      if (!role) return false;
+      return role === "admin" || role === "editor";
+    }
+
 
   return (
     <main style={{ padding: 20 }}>
@@ -120,7 +120,6 @@ async function handleSearchSuggest(query: string) {
         {suggestions.length > 0 && (
           <ul style={{ cursor: "pointer", background: "white", border: "1px solid #ccc" }}>
             {suggestions.map((s, idx) => {
-              // find the asset that matches the suggestion title
               const matchedAsset = assets.find(a => a.title === s);
               return (
                 <li
@@ -182,32 +181,30 @@ async function handleSearchSuggest(query: string) {
               )}
               {canModify(a) && (
                 <>
-                  {/* Edit button */}
                   <button
                     style={{ marginLeft: 6 }}
                     onClick={async () => {
-                      const newTitle = prompt("New title", a.title || "");
+                      const newTitle = prompt("Enter new title", a.title || "");
                       if (!newTitle || newTitle === a.title) return;
                       try {
-                        await updateAsset(a.id, { title: newTitle });
+                        await updateAsset(a.id, { title: newTitle }); 
                         await fetchAssets();
-                        alert("Updated successfully");
+                        alert("Metadata updated (version logged)");
                       } catch (err) {
                         console.error("Update failed:", err);
                         alert("Update failed");
                       }
                     }}
                   >
-                    Edit
+                    Edit Metadata
                   </button>
 
-                  {/* Delete button */}
                   <button
                     style={{ marginLeft: 6 }}
                     onClick={async () => {
                       if (!confirm("Delete this asset?")) return;
                       try {
-                        await deleteAsset(a.id); 
+                        await deleteAsset(a.id);
                         await fetchAssets();
                         alert("Deleted successfully");
                       } catch (err) {
