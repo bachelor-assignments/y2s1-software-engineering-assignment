@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAssetList, deleteAsset, downloadAsset, uploadAsset, updateAsset } from "@utils/assetAPI";
+import { useRouter } from "next/navigation";
 
 // read role & username from cookie
 function getCookie(name: string) {
@@ -21,6 +22,7 @@ export default function AssetPage() {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     setRole(getCookie("role") || null);
@@ -106,7 +108,7 @@ async function handleSearchSuggest(query: string) {
       {/* Search*/}
       <div>
         <input
-          placeholder='Search metadata e.g. {"category":"report"}'
+          placeholder='Search title metadata report'
           value={metadataSearch}
           onChange={(e) => {
             setMetadataSearch(e.target.value);
@@ -116,12 +118,27 @@ async function handleSearchSuggest(query: string) {
         <button onClick={fetchAssets}>Search</button>
 
         {suggestions.length > 0 && (
-          <ul>
-            {suggestions.map((s, idx) => (
-              <li key={idx} onClick={() => { setMetadataSearch(s); setSuggestions([]); }}>
-                {s}
-              </li>
-            ))}
+          <ul style={{ cursor: "pointer", background: "white", border: "1px solid #ccc" }}>
+            {suggestions.map((s, idx) => {
+              // find the asset that matches the suggestion title
+              const matchedAsset = assets.find(a => a.title === s);
+              return (
+                <li
+                  key={idx}
+                  onClick={() => {
+                    if (matchedAsset) {
+                      router.push(`/asset/${encodeURIComponent(String(matchedAsset.id))}`);
+                    } else {
+                      setMetadataSearch(s);
+                      setSuggestions([]);
+                    }
+                  }}
+                  style={{ padding: "4px 8px" }}
+                >
+                  {s}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
