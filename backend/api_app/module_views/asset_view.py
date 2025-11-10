@@ -36,6 +36,12 @@ class AssetView(APIView):
         uploaded_file = cast(UploadedFile, validated_data.get("file"))
 
         filename = f"{uuid.uuid4()}_{uploaded_file.name}"
+
+        # ensure filename dont exceed max length defined in model
+        ASSET_FILENAME_MAX_LENGTH = Asset._meta.get_field("file_name").max_length
+        if len(filename) > ASSET_FILENAME_MAX_LENGTH:
+            filename = filename[:ASSET_FILENAME_MAX_LENGTH]
+
         file_url = file_service.upload_file_to_minio(uploaded_file, filename)
 
         asset_serializer = AssetSerializer(data=request.data, action="post")
