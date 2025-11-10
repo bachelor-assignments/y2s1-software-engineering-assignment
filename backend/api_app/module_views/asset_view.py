@@ -65,7 +65,7 @@ class AssetView(APIView):
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-        if user.role == "viewer" and user != asset.owner:
+        if user.role == "editor" and user != asset.owner:
             return Response(
                 "You are not allowed to modify this asset.",
                 status=status.HTTP_403_FORBIDDEN,
