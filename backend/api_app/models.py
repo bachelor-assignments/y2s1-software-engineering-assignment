@@ -18,9 +18,9 @@ class User(AbstractUser):
 
 
 class Asset(models.Model):
-    id = models.AutoField(primary_key=True)  
-    file_name = models.CharField(max_length=100, unique=True) 
-    title = models.CharField(max_length=100, unique=True)
+    id = models.AutoField(primary_key=True)
+    file_name = models.CharField(max_length=100, unique=True)
+    title = models.CharField(max_length=100)
     metadata = models.JSONField(default=dict)
     updated_at = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)

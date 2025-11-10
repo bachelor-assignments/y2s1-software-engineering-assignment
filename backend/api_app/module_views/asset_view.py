@@ -18,9 +18,9 @@ class AssetView(APIView):
     permission_classes = [RoleCrudPermission]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    def get(self, request: Request, asset_id=None): 
+    def get(self, request: Request, asset_id=None):
         try:
-            asset = Asset.objects.get(id=asset_id) 
+            asset = Asset.objects.get(id=asset_id)
         except Asset.DoesNotExist:
             return Response("Asset not found.", status=status.HTTP_404_NOT_FOUND)
 
@@ -34,12 +34,6 @@ class AssetView(APIView):
         file_serializer.is_valid(raise_exception=True)
         validated_data = cast(dict[str, Any], file_serializer.validated_data)
         uploaded_file = cast(UploadedFile, validated_data.get("file"))
-
-        base_title = request.data.get("title")
-        if base_title:
-            existing_assets = Asset.objects.filter(title__startswith=base_title).count()
-            if existing_assets > 0:
-                request.data["title"] = f"{base_title} ({existing_assets})"
 
         filename = f"{uuid.uuid4()}_{uploaded_file.name}"
         file_url = file_service.upload_file_to_minio(uploaded_file, filename)
@@ -58,7 +52,7 @@ class AssetView(APIView):
 
     def put(self, request: Request, asset_id=None):
         try:
-            asset = Asset.objects.get(id=asset_id) 
+            asset = Asset.objects.get(id=asset_id)
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
@@ -85,9 +79,9 @@ class AssetView(APIView):
 
         return Response(asset_serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request: Request, asset_id=None):  
+    def delete(self, request: Request, asset_id=None):
         try:
-            asset = Asset.objects.get(id=asset_id)  
+            asset = Asset.objects.get(id=asset_id)
         except Asset.DoesNotExist:
             return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
@@ -99,7 +93,7 @@ class AssetView(APIView):
             )
 
         asset.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AssetListView(APIView):
