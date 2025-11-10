@@ -41,7 +41,7 @@ services:
      POSTGRES_USER: ${POSTGRES_DATABASE_USERNAME}
      POSTGRES_PASSWORD: ${POSTGRES_DATABASE_PASSWORD}
     ports:
-      - "${POSTGRES_DB_EXPOSE_PORT_DEV}:5432"
+      - "${POSTGRES_DB_EXPOSE_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     depends_on:
