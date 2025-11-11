@@ -3,7 +3,12 @@ import json
 import os
 from api_app.models import Asset, AssetLog
 from api_app.permissions import RoleCrudPermission
-from api_app.serializers import AssetSerializer, FileSerializer, PaginationSerializer
+from api_app.serializers import (
+    AssetSerializer,
+    AssetLogSerializer,
+    FileSerializer,
+    PaginationSerializer,
+)
 from api_app.services import file_service
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework.views import APIView
@@ -152,20 +157,33 @@ class AssetVersionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, asset_id=None):
+        pagination_serializer = PaginationSerializer(data=request.query_params)
+        pagination_serializer.is_valid(raise_exception=True)
+
         try:
             asset = Asset.objects.get(id=asset_id)
         except Asset.DoesNotExist:
-            return Response("Asset not found", status=status.HTTP_404_NOT_FOUND)
+            return Response("Asset does not exist.", status=status.HTTP_404_NOT_FOUND)
 
         logs = AssetLog.objects.filter(asset=asset).order_by("-updated_at")
-        data = [
+
+        page_index = pagination_serializer.validated_data["page_index"]
+        page_size = pagination_serializer.validated_data["page_size"]
+        offset = page_index * page_size
+        limit = page_size
+
+        version_count = logs.count()
+        paginated_logs = logs[offset : offset + limit]
+
+        serializer = AssetLogSerializer(paginated_logs, many=True)
+
+        return Response(
             {
-                "id": log.id,
-                "title": log.title,
-                "metadata": log.metadata,
-                "updated_at": log.updated_at,
-                "updated_by": log.updated_by.username,
-            }
-            for log in logs
-        ]
-        return Response(data, status=status.HTTP_200_OK)
+                "versions": serializer.data,
+                "count": version_count,
+                "page_index": page_index,
+                "page_size": page_size,
+                "total_pages": (version_count + page_size - 1) // page_size,
+            },
+            status=status.HTTP_200_OK,
+        )

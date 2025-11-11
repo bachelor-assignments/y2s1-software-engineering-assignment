@@ -18,8 +18,19 @@ A Scalable Digital Asset Management (DAM) System for Visual AI Application.
 4. Search capability (keyword, filters, date ranges, and tag-based).
 5. Asset previews (images, PDFs, videos) and version history.
 
-### How to setup development environment?
+### How to setup?
+
+#### Development environment
+
 1. `cd` into project root directory
 2. create an `.env` file based on [example.env](example.env)
 3. build images with ```docker compose -f docker-compose-dev.yml build```
 4. run using ```docker compose -f docker-compose-dev.yml up``` 
+
+
+#### Production environment
+
+1. `cd` into project root directory
+2. create an `.env` file based on [example.env](example.env)
+3. build images with ```docker compose -f docker-compose.yml build```
+4. run using ```docker compose -f docker-compose.yml up``` 
