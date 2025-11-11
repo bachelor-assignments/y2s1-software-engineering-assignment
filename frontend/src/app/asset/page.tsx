@@ -143,29 +143,24 @@ async function handleSearchSuggest(query: string) {
       </div>
 
       {/* Upload */}
-      <section style={{ marginBottom: 20 }}>
-        <form onSubmit={handleUpload}>
-          <input
-            required
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            type="file"
-            required
-            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-          />
-          <button type="submit">Upload</button>
-        </form>
-      </section>
-
-      {/* Admin panel */}
-      {role === "admin" && (
-        <div style={{ marginBottom: 10 }}>
-          <Link href="/admin"><button>Admin Panel</button></Link>
-        </div>
-      )}
+      {role === "admin" || role === "editor" ? (
+        <section style={{ marginBottom: 20 }}>
+          <form onSubmit={handleUpload}>
+            <input
+              required
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <input
+              type="file"
+              required
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+            />
+            <button type="submit">Upload</button>
+          </form>
+        </section>
+      ) : null}
 
       {/* Asset list */}
       {loading ? (

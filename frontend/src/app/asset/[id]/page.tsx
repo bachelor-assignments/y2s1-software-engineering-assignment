@@ -36,10 +36,17 @@ export default function AssetDetail() {
     try {
       const d = await getAssetDetail(assetId);
       setAsset(d);
-      const v = await getAssetVersions(assetId); 
-      setVersions(Array.isArray(v) ? v : v.results || v);
+
+      const v = await getAssetVersions(assetId);
+      const versionList =
+        Array.isArray(v) ? v :
+        Array.isArray(v?.versions) ? v.versions :
+        [];
+
+      setVersions(versionList);
     } catch (err) {
       console.error("Fetch asset failed:", err);
+      setVersions([]);
     }
   }
 

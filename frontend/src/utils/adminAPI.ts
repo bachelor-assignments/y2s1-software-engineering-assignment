@@ -30,9 +30,24 @@ export async function updateUser(id: string, userData: any) {
     method: "PUT",
     body: JSON.stringify(userData),
   });
-  if (!res.ok) throw new Error("Failed to update user");
-  return res.json();
+
+  const text = await res.text();
+  console.log("Update user debug:", res.status, text);
+
+  if (!res.ok) {
+    let errMsg = "Failed to update user";
+    try {
+      const err = JSON.parse(text);
+      errMsg = err.detail || JSON.stringify(err);
+    } catch {
+      errMsg = text || errMsg;
+    }
+    throw new Error(errMsg);
+  }
+
+  return JSON.parse(text);
 }
+
 
 // Delete user
 export async function deleteUser(id: string) {
