@@ -1,0 +1,76 @@
+services:
+  5005cmd-frontend:
+    image: 5005cmd-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - type: volume
+        target: /app/node_modules
+    networks:
+      - frontend
+    ports:
+      - "${NEXTJS_FRONTEND_EXPOSE_PORT}:3000"
+
+  5005cmd-backend:
+    image: 5005cmd-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    env_file:
+      - .env
+    environment:
+      - DJANGO_DEBUG=0
+    depends_on:
+      - 5005cmd-database
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "${DJANGO_BACKEND_EXPOSE_PORT_DEV}:8000"
+
+  5005cmd-database:
+    image: postgres:18rc1-alpine3.22
+    environment:
+     POSTGRES_DB: ${POSTGRES_DATABASE_NAME}
+     POSTGRES_USER: ${POSTGRES_DATABASE_USERNAME}
+     POSTGRES_PASSWORD: ${POSTGRES_DATABASE_PASSWORD}
+    ports:
+      - "${POSTGRES_DB_EXPOSE_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    depends_on:
+      - 5005cmd-object-storage
+    env_file:
+      - .env
+    networks:
+      - frontend
+      - backend
+
+  5005cmd-object-storage:
+    image: quay.io/minio/minio:latest
+    container_name: minio
+    restart: always
+    ports:
+      - "${MINIO_API_EXPOSE_PORT}:9000"
+      - "${MINIO_CONSOLE_EXPOSE_PORT}:9001" 
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - backend
+
+volumes:
+  postgres_data:
+  minio_data:
+networks:
+  frontend:
+  backend:

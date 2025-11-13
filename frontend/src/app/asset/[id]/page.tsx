@@ -1,0 +1,184 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  getAssetDetail,
+  getAssetVersions,
+  deleteAsset,
+  downloadAsset,
+  updateAsset,
+} from "@utils/assetAPI";
+import "@styles/asset-detail.css";
+
+function getCookie(name: string) {
+  const v = typeof document === "undefined" ? "" : document.cookie;
+  return v
+    .split("; ")
+    .find((row) => row.startsWith(name + "="))
+    ?.split("=")[1];
+}
+
+export default function AssetDetail() {
+  const params = useParams();
+  const assetId = params?.id as string; 
+  const [asset, setAsset] = useState<any | null>(null);
+  const [versions, setVersions] = useState<any[]>([]);
+  const [role, setRole] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    setRole(getCookie("role") || null);
+    setUsername(getCookie("username") || null);
+    fetchAll();
+  }, [assetId]);
+
+  async function fetchAll() {
+    try {
+      const d = await getAssetDetail(assetId);
+      setAsset(d);
+
+      const v = await getAssetVersions(assetId);
+      const versionList =
+        Array.isArray(v) ? v :
+        Array.isArray(v?.versions) ? v.versions :
+        [];
+
+      setVersions(versionList);
+    } catch (err) {
+      console.error("Fetch asset failed:", err);
+      setVersions([]);
+    }
+  }
+
+  function canModify() {
+    if (!asset) return false;
+    if (role === "admin" || role === "editor") return true;
+    if (asset.owner?.username && username && asset.owner.username === decodeURIComponent(username)) return true;
+    return false;
+  }
+
+  async function onDownload() {
+    if (!asset?.asset_url) return alert("No file URL");
+    try {
+      await downloadAsset(asset.asset_url, asset.title);
+    } catch (err) {
+      console.error("Download error:", err);
+      alert("Download failed");
+    }
+  }
+
+  async function onEdit() {
+    const newTitle = prompt("Enter new title", asset?.title || "");
+    if (!newTitle || newTitle === asset?.title) return;
+    try {
+      await updateAsset(asset.id, { title: newTitle });
+      await fetchAll();
+      alert("Metadata updated successfully!");
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Update failed");
+    }
+  }
+
+  async function onDelete() {
+    if (!confirm("Delete this asset?")) return;
+    try {
+      await deleteAsset(asset.id);  
+      router.push("/asset");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed");
+    }
+  }
+
+  if (!asset) return <div className="loading">Loading asset...</div>;
+
+  const url = asset.asset_url;
+  const isImage = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url);
+  const isPdf = /\.pdf$/i.test(url);
+  const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+
+  return (
+    <div className="asset-detail-container">
+      <div className="asset-detail-card">
+        {/* Header */}
+        <div className="asset-header">
+          <h1>{asset.title}</h1>
+          <div className="asset-meta">
+            <span className="meta-item">Owner: {asset.owner?.username || "—"}</span>
+            <span className="meta-item">Updated: {new Date(asset.updated_at).toLocaleString()}</span>
+          </div>
+        </div>
+
+        {/* File Preview */}
+        <div className="preview-section">
+          {isImage && (
+            <div className="image-preview">
+              <img src={url} alt={asset.title} />
+            </div>
+          )}
+          {isPdf && (
+            <div className="pdf-preview">
+              <iframe src={url} title="PDF Preview" />
+            </div>
+          )}
+          {isVideo && (
+            <div className="video-preview">
+              <video controls>
+                <source src={url} />
+                Your browser does not support video.
+              </video>
+            </div>
+          )}
+          {!isImage && !isPdf && !isVideo && (
+            <div className="file-preview">
+              <div className="file-icon">📄</div>
+              <p>This file type cannot be previewed</p>
+              <a href={url} target="_blank" rel="noreferrer" className="open-link">
+                Open file in new tab
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="action-buttons">
+          <button onClick={onDownload} className="btn btn-primary">
+            Download
+          </button>
+
+          {canModify() && (
+            <>
+              <button onClick={onEdit} className="btn btn-secondary">
+                Edit Metadata
+              </button>
+              <button onClick={onDelete} className="btn btn-danger">
+                Delete
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Version History */}
+        <section className="version-history">
+          <h3>Version History</h3>
+          {versions.length === 0 ? (
+            <p className="no-versions">No previous versions.</p>
+          ) : (
+            <div className="versions-list">
+              {versions.map((v) => (
+                <div key={v.id} className="version-item">
+                  <div className="version-title">{v.title}</div>
+                  <div className="version-meta">
+                    by {v.updated_by} at {new Date(v.updated_at).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
