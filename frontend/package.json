@@ -20,6 +20,7 @@
     "@eslint/eslintrc": "^3",
     "@fr0xty/prettier-config": "^1.0.2",
     "@tailwindcss/postcss": "^4.1.14",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
