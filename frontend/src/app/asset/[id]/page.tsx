@@ -8,6 +8,7 @@ import {
   downloadAsset,
   updateAsset,
 } from "@utils/assetAPI";
+import "@styles/asset-detail.css";
 
 function getCookie(name: string) {
   const v = typeof document === "undefined" ? "" : document.cookie;
@@ -91,7 +92,7 @@ export default function AssetDetail() {
     }
   }
 
-  if (!asset) return <p>Loading...</p>;
+  if (!asset) return <div className="loading">Loading asset...</div>;
 
   const url = asset.asset_url;
   const isImage = /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url);
@@ -99,54 +100,85 @@ export default function AssetDetail() {
   const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
 
   return (
-    <main style={{ padding: 20 }}>
-      <h1>{asset.title}</h1>
-      <p>Owner: {asset.owner?.username || "—"}</p>
-      <p>Updated at: {new Date(asset.updated_at).toLocaleString()}</p>
-
-      <div style={{ marginTop: 12 }}>
-        {isImage && <img src={url} alt={asset.title} style={{ maxWidth: "100%", height: "auto" }} />}
-        {isPdf && <iframe src={url} style={{ width: "100%", height: 600 }} title="PDF Preview" />}
-        {isVideo && (
-          <video controls style={{ maxWidth: "100%" }}>
-            <source src={url} />
-            Your browser does not support video.
-          </video>
-        )}
-        {!isImage && !isPdf && !isVideo && (
-          <div>
-            <a href={url} target="_blank" rel="noreferrer">
-              Open file
-            </a>
+    <div className="asset-detail-container">
+      <div className="asset-detail-card">
+        {/* Header */}
+        <div className="asset-header">
+          <h1>{asset.title}</h1>
+          <div className="asset-meta">
+            <span className="meta-item">Owner: {asset.owner?.username || "—"}</span>
+            <span className="meta-item">Updated: {new Date(asset.updated_at).toLocaleString()}</span>
           </div>
-        )}
+        </div>
+
+        {/* File Preview */}
+        <div className="preview-section">
+          {isImage && (
+            <div className="image-preview">
+              <img src={url} alt={asset.title} />
+            </div>
+          )}
+          {isPdf && (
+            <div className="pdf-preview">
+              <iframe src={url} title="PDF Preview" />
+            </div>
+          )}
+          {isVideo && (
+            <div className="video-preview">
+              <video controls>
+                <source src={url} />
+                Your browser does not support video.
+              </video>
+            </div>
+          )}
+          {!isImage && !isPdf && !isVideo && (
+            <div className="file-preview">
+              <div className="file-icon">📄</div>
+              <p>This file type cannot be previewed</p>
+              <a href={url} target="_blank" rel="noreferrer" className="open-link">
+                Open file in new tab
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="action-buttons">
+          <button onClick={onDownload} className="btn btn-primary">
+            Download
+          </button>
+
+          {canModify() && (
+            <>
+              <button onClick={onEdit} className="btn btn-secondary">
+                Edit Metadata
+              </button>
+              <button onClick={onDelete} className="btn btn-danger">
+                Delete
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Version History */}
+        <section className="version-history">
+          <h3>Version History</h3>
+          {versions.length === 0 ? (
+            <p className="no-versions">No previous versions.</p>
+          ) : (
+            <div className="versions-list">
+              {versions.map((v) => (
+                <div key={v.id} className="version-item">
+                  <div className="version-title">{v.title}</div>
+                  <div className="version-meta">
+                    by {v.updated_by} at {new Date(v.updated_at).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
-
-      <div style={{ marginTop: 12 }}>
-        <button onClick={onDownload}>Download</button>
-
-        {role !== "viewer" && (
-          <>
-            <button onClick={onEdit} style={{ marginLeft: 8 }}>Edit Metadata</button>
-            <button onClick={onDelete} style={{ marginLeft: 8 }}>Delete</button>
-          </>
-        )}
-      </div>
-
-      <section style={{ marginTop: 24 }}>
-        <h3>Version History</h3>
-        {versions.length === 0 ? (
-          <p>No previous versions.</p>
-        ) : (
-          <ul>
-            {versions.map((v) => (
-              <li key={v.id}>
-                {v.title} — by {v.updated_by} at {new Date(v.updated_at).toLocaleString()}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </main>
+    </div>
   );
 }

@@ -1,27 +1,26 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { getAssetList, deleteAsset, downloadAsset, uploadAsset, updateAsset } from "@utils/assetAPI";
 import { useRouter } from "next/navigation";
+import { getAssetList, deleteAsset, downloadAsset, uploadAsset, updateAsset } from "@utils/assetAPI";
+import "@styles/asset-grid.css"; // You'll need to create this CSS file
 
 // read role & username from cookie
 function getCookie(name: string) {
-  const v = typeof document === "undefined" ? "" : document.cookie;
-  return v
-    .split("; ")
-    .find((row) => row.startsWith(name + "="))
-    ?.split("=")[1];
+  if (typeof document === "undefined") return "";
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+  return "";
 }
 
 export default function AssetPage() {
   const [assets, setAssets] = useState<any[]>([]);
-  const [metadataSearch, setMetadataSearch] = useState("");
   const [role, setRole] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -33,46 +32,15 @@ export default function AssetPage() {
   async function fetchAssets() {
     setLoading(true);
     try {
-      const list = await getAssetList(metadataSearch, 0, 20);
+      const list = await getAssetList(searchQuery, 0, 50);
       setAssets(Array.isArray(list) ? list : list.assets || list.results || []);
     } catch (err) {
       console.error("Failed to fetch assets:", err);
-      alert("Search failed. Ensure JSON format or use plain text for title.");    
+      alert("Failed to load assets");
     } finally {
       setLoading(false);
     }
   }
-
-  async function handleDelete(asset_id: number) {
-    if (!confirm("Delete this asset?")) return;
-    try {
-      await deleteAsset(asset_id);
-      await fetchAssets();
-      alert("Deleted successfully");
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Delete failed");
-    }
-  }
-
-
-async function handleSearchSuggest(query: string) {
-  if (!query.trim()) {
-    setSuggestions([]);
-    return;
-  }
-  try {
-    const list = await getAssetList("", 0, 100); 
-    const allTitles = list.map((a: any) => a.title);
-    const matched = allTitles.filter((t: string) =>
-      t.toLowerCase().includes(query.toLowerCase())
-    );
-    setSuggestions(matched.slice(0, 5)); 
-  } catch (err) {
-    console.error("Suggestion failed:", err);
-  }
-}
-
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
@@ -95,127 +63,122 @@ async function handleSearchSuggest(query: string) {
     }
   }
 
-    function canModify(asset: any) {
-      if (!role) return false;
-      return role === "admin" || role === "editor";
-    }
-
+  function canModify(asset: any) {
+    if (!role) return false;
+    return role === "admin" || role === "editor";
+  }
 
   return (
-    <main style={{ padding: 20 }}>
-      <h1>Assets</h1>
+    <div className="asset-grid-container">
+      {/* Header */}
+      <header className="asset-header">
+        <div className="header-content">
+          <h1>Assets</h1>
+          {username && (
+            <div className="user-info">
+              <span>Welcome, {username}</span>
+              {role && <span className="role-badge">{role}</span>}
+            </div>
+          )}
+        </div>
+        
+        {/* Search Bar */}
+        <div className="search-section">
+          <input
+            type="text"
+            placeholder="Search assets..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          <button onClick={fetchAssets} className="search-button">
+            Search
+          </button>
+        </div>
 
-      {/* Search*/}
-      <div>
-        <input
-          placeholder='Search title metadata report'
-          value={metadataSearch}
-          onChange={(e) => {
-            setMetadataSearch(e.target.value);
-            handleSearchSuggest(e.target.value); 
-          }}
-        />
-        <button onClick={fetchAssets}>Search</button>
-
-        {suggestions.length > 0 && (
-          <ul style={{ cursor: "pointer", background: "white", border: "1px solid #ccc" }}>
-            {suggestions.map((s, idx) => {
-              const matchedAsset = assets.find(a => a.title === s);
-              return (
-                <li
-                  key={idx}
-                  onClick={() => {
-                    if (matchedAsset) {
-                      router.push(`/asset/${encodeURIComponent(String(matchedAsset.id))}`);
-                    } else {
-                      setMetadataSearch(s);
-                      setSuggestions([]);
-                    }
-                  }}
-                  style={{ padding: "4px 8px" }}
-                >
-                  {s}
-                </li>
-              );
-            })}
-          </ul>
+        {/* Upload for Admins/Editors */}
+        {(role === "admin" || role === "editor") && (
+          <div className="upload-section">
+            <form onSubmit={handleUpload} className="upload-form">
+              <input
+                required
+                placeholder="Asset title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="title-input"
+              />
+              <input
+                type="file"
+                required
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="file-input"
+              />
+              <button type="submit" className="upload-button">
+                Upload
+              </button>
+            </form>
+          </div>
         )}
-      </div>
+      </header>
 
-      {/* Upload */}
-      {role === "admin" || role === "editor" ? (
-        <section style={{ marginBottom: 20 }}>
-          <form onSubmit={handleUpload}>
-            <input
-              required
-              placeholder="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <input
-              type="file"
-              required
-              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-            />
-            <button type="submit">Upload</button>
-          </form>
-        </section>
-      ) : null}
-
-      {/* Asset list */}
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <ul>
-          {assets.map((a) => (
-            <li key={a.file_name} style={{ marginBottom: 8 }}>
-              <strong>{a.title}</strong> — owner: {a.owner?.username || "—"}{" "}
-              <Link href={`/asset/${encodeURIComponent(String(a.id))}`}><button style={{ marginLeft: 8 }}>Preview</button></Link>
-              {a.asset_url && a.asset_url.startsWith("http") && (
-                <button onClick={() => downloadAsset(a.asset_url, a.title)} style={{ marginLeft: 6 }}>Download</button>
-              )}
-              {canModify(a) && (
-                <>
-                  <button
-                    style={{ marginLeft: 6 }}
-                    onClick={async () => {
-                      const newTitle = prompt("Enter new title", a.title || "");
-                      if (!newTitle || newTitle === a.title) return;
-                      try {
-                        await updateAsset(a.id, { title: newTitle }); 
-                        await fetchAssets();
-                        alert("Metadata updated (version logged)");
-                      } catch (err) {
-                        console.error("Update failed:", err);
-                        alert("Update failed");
-                      }
-                    }}
-                  >
-                    Edit Metadata
-                  </button>
-
-                  <button
-                    style={{ marginLeft: 6 }}
-                    onClick={async () => {
-                      if (!confirm("Delete this asset?")) return;
-                      try {
-                        await deleteAsset(a.id);
-                        await fetchAssets();
-                        alert("Deleted successfully");
-                      } catch (err) {
-                        console.error("Delete failed:", err);
-                        alert("Delete failed");
-                      }
-                    }}
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+      {/* Asset Grid */}
+      <main className="asset-grid-main">
+        {loading ? (
+          <div className="loading">Loading assets...</div>
+        ) : assets.length === 0 ? (
+          <div className="empty-state">
+            <h2>No assets found</h2>
+            <p>{(role === "admin" || role === "editor") ? "Upload your first asset!" : "Check back later for new content."}</p>
+          </div>
+        ) : (
+          <div className="asset-grid">
+            {assets.map((asset) => (
+              <div 
+                key={asset.id} 
+                className="asset-card"
+                onClick={() => router.push(`/asset/${encodeURIComponent(String(asset.id))}`)}
+              >
+                <div className="thumbnail">
+                  <div className="thumbnail-placeholder">
+                    {asset.title?.charAt(0).toUpperCase() || 'A'}
+                  </div>
+                </div>
+                <div className="asset-info">
+                  <h3 className="asset-title">{asset.title}</h3>
+                  <p className="asset-owner">By {asset.owner?.username || "Unknown"}</p>
+                  <p className="asset-filename">{asset.file_name}</p>
+                </div>
+                <div className="asset-actions">
+                  {asset.asset_url && asset.asset_url.startsWith("http") && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadAsset(asset.asset_url, asset.title);
+                      }}
+                      className="action-button download"
+                    >
+                      Download
+                    </button>
+                  )}
+                  {canModify(asset) && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm("Delete this asset?")) {
+                          deleteAsset(asset.id).then(fetchAssets);
+                        }
+                      }}
+                      className="action-button delete"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
   );
 }

@@ -4,11 +4,13 @@ const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_DJANGO_BACKEND_URL || "http://l
 
 // --- Upload ---
 export async function uploadAsset(formData: FormData) {
+  const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_DJANGO_BACKEND_URL;
   const res = await fetch(`${BACKEND_BASE_URL}/api/asset/`, {
     method: "POST",
     body: formData,
-    credentials: "include",
+    credentials: "include", 
   });
+  
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || "Failed to upload asset");

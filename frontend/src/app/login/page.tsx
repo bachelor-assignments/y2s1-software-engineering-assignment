@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginUser } from "@utils/loginAPI"; 
+import { loginUser } from "@utils/loginAPI";
+import "@styles/login.css";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -32,29 +33,49 @@ export default function LoginPage() {
   };
 
   return (
-    <main style={{ textAlign: "center", marginTop: "50px" }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        /><br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        /><br />
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+    <div className="modern-login-container">
+      <div className="modern-login-card">
+        <div className="login-header">
+          <h1>Login</h1>
+          <p>Enter your details</p>
+        </div>
+        
+        <form onSubmit={handleLogin} className="login-form">
+          <div className="form-group">
+            <label htmlFor="username">Email address</label>
+            <input
+              id="username"
+              type="text"
+              placeholder="Enter your email"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </main>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="modern-login-button"
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        {error && <p className="modern-error-message">{error}</p>}
+      </div>
+    </div>
   );
 }
