@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAssetList, deleteAsset, downloadAsset, uploadAsset, updateAsset } from "@utils/assetAPI";
-import "@styles/asset-grid.css"; // You'll need to create this CSS file
+import "@styles/asset-grid.css"; 
 
-// read role & username from cookie
+
 function getCookie(name: string) {
   if (typeof document === "undefined") return "";
   const value = `; ${document.cookie}`;
@@ -22,6 +22,10 @@ export default function AssetPage() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+
+  function isImageFile(filename: string) {
+    return /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(filename);
+  }
 
   useEffect(() => {
     setRole(getCookie("role") || null);
@@ -139,6 +143,18 @@ export default function AssetPage() {
                 onClick={() => router.push(`/asset/${encodeURIComponent(String(asset.id))}`)}
               >
                 <div className="thumbnail">
+                  {isImageFile(asset.file_name) && asset.asset_url ? (
+                    <img 
+                      src={asset.asset_url} 
+                      alt={asset.title}
+                      className="thumbnail-image"
+                      onError={(e) => {
+                        // If image fails to load, show placeholder
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
                   <div className="thumbnail-placeholder">
                     {asset.title?.charAt(0).toUpperCase() || 'A'}
                   </div>

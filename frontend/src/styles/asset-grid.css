@@ -1,4 +1,3 @@
-/* asset-grid.css */
 .asset-grid-container {
   min-height: 100vh;
   background-color: #f9f9f9;
@@ -272,4 +271,35 @@
   .asset-header {
     padding: 15px;
   }
+}
+
+.thumbnail {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail-placeholder {
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
